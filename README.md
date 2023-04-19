@@ -1,9 +1,11 @@
 Distribution
 
-BUTCH
-- Player
+FREE
 - Enemy (melee and ranged)
   - Projectiles
+
+BUTCH
+- Player
 - Camera
 
 JED
