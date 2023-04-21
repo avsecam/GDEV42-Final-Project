@@ -35,6 +35,10 @@ std::vector<std::vector<int>> GeneratePascalsTriangle(const int depth) {
   return newPascalsTriangle;
 }
 
+bool ValidateControlPointCount(const int order, const int numberOfPoints) {
+	return !(numberOfPoints <= order || (numberOfPoints - 1) % order != 0);
+}
+
 Vector2 GetPointInCurve(
   const std::vector<Vector2> points, const float distance,
   const std::vector<int> PTCoefficients
