@@ -59,13 +59,12 @@ struct Obstacle : public Entity {
   float progress;  // how much the entity has moved along its path
 
   Obstacle(
-    ObstacleType _type, Vector2 _position, Vector2 _halfSizes, BezierCurve _path, Color _color = MOVING_OBSTACLE_COLOR
+    ObstacleType _type, Vector2 _position, Vector2 _halfSizes, Color _color = MOVING_OBSTACLE_COLOR
   ) {
 		this->type = _type;
     this->position = _position;
     this->halfSizes = _halfSizes;
     this->color = _color;
-    this->path = _path;
   }
 };
 
