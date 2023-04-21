@@ -7,11 +7,14 @@
 
 struct Level {
   Player* player;
-  std::vector<Entity*> obstacles;
+  std::vector<Entity*> staticObstacles;
   std::vector<MovingEntity*> movingObstacles;
 
   void Draw() {
-    for (Entity* o : obstacles) {
+    for (Entity* o : staticObstacles) {
+      o->Draw();
+    }
+    for (Entity* o : movingObstacles) {
       o->Draw();
     }
     player->Draw();
@@ -34,17 +37,17 @@ Level* LoadLevel(const char filename[]) {
   );
   level->player = p;
 
-  int obstacleCount;
+  int staticObstacleCount;
 	int movingObstacleCount;
-  levelFile >> obstacleCount;
+  levelFile >> staticObstacleCount;
   levelFile >> movingObstacleCount;
-  for (int i = 0; i < obstacleCount; ++i) {
+  for (int i = 0; i < staticObstacleCount; ++i) {
     Vector2 oPosition;
     Vector2 oHalfSizes;
     levelFile >> oPosition.x >> oPosition.y;
     levelFile >> oHalfSizes.x >> oHalfSizes.y;
     Entity* o = new Entity(oPosition, oHalfSizes, OBSTACLE_COLOR);
-    level->obstacles.push_back(o);
+    level->staticObstacles.push_back(o);
   }
 
 	for (int i = 0; i < movingObstacleCount; ++i) {
