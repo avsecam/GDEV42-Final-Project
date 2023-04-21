@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "properties.hpp"
+#include "bezier.hpp"
 
 const float PLAYER_WIDTH(24);
 const float PLAYER_HEIGHT(32);
@@ -42,6 +43,12 @@ struct Entity {
   bool IsIntersecting(Rectangle rec) {
     return CheckCollisionRecs(GetCollider(), rec);
   }
+};
+
+struct MovingEntity : Entity {
+	BezierCurve path;
+	
+  using Entity::Entity;
 };
 
 struct Player : Entity {
