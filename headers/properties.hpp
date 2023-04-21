@@ -42,7 +42,6 @@ Properties* LoadProperties(const char filename[], const int targetFps) {
   while (std::getline(propertiesFile, input)) {
     int splitter = input.find(" ");
     std::string inputProperty = input.substr(0, splitter - 0);
-    std::cout << inputProperty << std::endl;
 
     if (inputProperty == "CAM_EDGES"){
       std::string edges = input.substr(splitter+1, input.length());
