@@ -5,9 +5,9 @@
 #include <iostream>
 #include <vector>
 
+#include "headers/bezier.hpp"
 #include "headers/level.hpp"
 #include "headers/properties.hpp"
-#include "headers/bezier.hpp"
 
 const char* LEVEL_FILENAME("level.cfg");
 const char* PROPERTIES_FILENAME("properties.cfg");
@@ -17,12 +17,15 @@ const float WINDOW_HEIGHT(600);
 const char* WINDOW_TITLE("HAKENSLASH THE PLATFORMER");
 
 const int TARGET_FPS(60);
+const float TIMESTEP(1.0f / (float)TARGET_FPS);
 
 int main() {
   Properties* properties = LoadProperties(PROPERTIES_FILENAME, TARGET_FPS);
   Level* level = LoadLevel(LEVEL_FILENAME);
+  level->GeneratePaths();
+
   Player* player = level->player;
-		
+
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(TARGET_FPS);
 
@@ -33,12 +36,17 @@ int main() {
 
   Vector2 cameraPos = {player->position.x, player->position.y};
 
-  std::cout << "CamEdges " << properties->camUpperLeft.x << " " << properties->camUpperLeft.y << " "
-            << properties->camLowerRight.x << " " << properties->camLowerRight.y << std::endl;
+  std::cout << "CamEdges " << properties->camUpperLeft.x << " "
+            << properties->camUpperLeft.y << " " << properties->camLowerRight.x
+            << " " << properties->camLowerRight.y << std::endl;
   std::cout << "CamType " << properties->camType << std::endl;
   std::cout << "CamDrift " << properties->camDrift << std::endl;
 
+  float accumulator = 0.0f;
+  float delta = 0.0f;
   while (!WindowShouldClose()) {
+    delta = GetFrameTime();
+
     float windowLeft = cameraView.target.x + properties->camUpperLeft.x;
     float windowRight = cameraView.target.x + properties->camLowerRight.x;
     float windowTop = cameraView.target.y + properties->camUpperLeft.y;
@@ -103,10 +111,12 @@ int main() {
       float cameraPushX = 0.0f;
       float cameraPushY = 0.0f;
       float driftX = Clamp(
-        player->position.x - (windowLeft + windowRight) / 2, -properties->camDrift, properties->camDrift
+        player->position.x - (windowLeft + windowRight) / 2,
+        -properties->camDrift, properties->camDrift
       );
       float driftY = Clamp(
-        player->position.y - (windowTop + windowBot) / 2, -properties->camDrift, properties->camDrift
+        player->position.y - (windowTop + windowBot) / 2, -properties->camDrift,
+        properties->camDrift
       );
 
       if ((player->position.x + player->halfSizes.x) > windowRight) {
@@ -137,7 +147,8 @@ int main() {
       float cameraPushX = 0.0f;
       float cameraPushY = 0.0f;
       float driftY = Clamp(
-        player->position.y - (windowTop + windowBot) / 2, -properties->camDrift, properties->camDrift
+        player->position.y - (windowTop + windowBot) / 2, -properties->camDrift,
+        properties->camDrift
       );
 
       if ((player->position.x + player->halfSizes.x) > windowRight) {
@@ -164,6 +175,12 @@ int main() {
       }
     }
 
+    accumulator += delta;
+    while (accumulator >= TIMESTEP) {
+      level->Update();
+			accumulator -= TIMESTEP;
+    }
+
     BeginDrawing();
     BeginMode2D(cameraView);
     ClearBackground(WHITE);
@@ -183,8 +200,8 @@ int main() {
 
   // Delete pointers
   delete player;
-  for (Entity* e : level->obstacles) {
-    delete e;
+  for (Obstacle* o : level->obstacles) {
+    delete o;
   }
   delete level;
 
