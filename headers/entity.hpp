@@ -23,6 +23,8 @@ struct Entity {
   Vector2 halfSizes;
   Color color;
 
+	Entity() = default;
+
   Entity(Vector2 _position, Vector2 _halfSizes, Color _color) {
     this->position = _position;
     this->halfSizes = _halfSizes;
@@ -45,13 +47,20 @@ struct Entity {
   }
 };
 
-struct MovingEntity : Entity {
+struct MovingEntity : public Entity {
 	BezierCurve path;
-	
-  using Entity::Entity;
+	float speed; // in percent i.e. speed = 5 means the entity moves at a rate of 5% per frame
+	float progress; // how much the entity has moved along its path
+
+  MovingEntity(Vector2 _position, Vector2 _halfSizes, Color _color, BezierCurve _path) {
+    this->position = _position;
+    this->halfSizes = _halfSizes;
+    this->color = _color;
+		this->path = _path;
+  }
 };
 
-struct Player : Entity {
+struct Player : public Entity {
   Vector2 velocity = Vector2Zero();
   Vector2 acceleration;
   float airControlFactor = 1.0f;
@@ -101,11 +110,11 @@ struct Player : Entity {
     // Jump handling
     if (IsKeyPressed(KEY_SPACE) && jumpFrame <= 0 && framesAfterFallingOff <= properties->vSafe) {
       velocity.y += properties->vAccel;
-      jumpFrame++;
+      ++jumpFrame;
     } else if (IsKeyDown(KEY_SPACE) && velocity.y < 0) {  // In jump
       if (jumpFrame < properties->vHold) {
         velocity.y += properties->vAccel * ((properties->vHold - jumpFrame) / properties->vHold);
-        jumpFrame++;
+        ++jumpFrame;
       } else {
         if (velocity.y < properties->vVelCut) {
           velocity.y = properties->vVelCut;
@@ -166,7 +175,7 @@ struct Player : Entity {
 
     // Left a platform
     if ((isGroundedLastFrame && !isGrounded) || (!isGrounded && framesAfterFallingOff > 0)) {
-      framesAfterFallingOff++;
+      ++framesAfterFallingOff;
     }
   }
 };
