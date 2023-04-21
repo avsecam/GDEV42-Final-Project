@@ -10,8 +10,6 @@
 const std::vector<std::vector<int>> BASE_PASCALS_TRIANGLE = {{1}, {1, 1}};
 std::vector<std::vector<int>> pascalsTriangle = BASE_PASCALS_TRIANGLE;
 
-const int NUMBER_OF_STEPS = 50;
-
 std::vector<std::vector<int>> GeneratePascalsTriangle(const int depth) {
   std::vector<std::vector<int>> newPascalsTriangle = BASE_PASCALS_TRIANGLE;
 
@@ -38,7 +36,7 @@ std::vector<std::vector<int>> GeneratePascalsTriangle(const int depth) {
 }
 
 bool ValidateControlPointCount(const int order, const int numberOfPoints) {
-	return !(numberOfPoints <= order || (numberOfPoints - 1) % order != 0);
+  return !(numberOfPoints <= order || (numberOfPoints - 1) % order != 0);
 }
 
 Vector2 GetPointInCurve(
@@ -61,6 +59,7 @@ Vector2 GetPointInCurve(
 struct BezierCurve {
   std::vector<Vector2> points;
   std::vector<Vector2> stepList;
+  int numberOfSteps;
 
   void Draw() {
     for (size_t i = 0; i < stepList.size() - 1; i++) {
@@ -70,12 +69,11 @@ struct BezierCurve {
 
   void CalculateCurve() {
     if (!stepList.empty()) stepList.clear();
-		
-    for (int i = 0; i < NUMBER_OF_STEPS; ++i) {
+    for (int i = 0; i < numberOfSteps; ++i) {
       Vector2 stepPoint;
 
       stepPoint = GetPointInCurve(
-        points, (float)i / NUMBER_OF_STEPS, pascalsTriangle[points.size() - 1]
+        points, (float)i / numberOfSteps, pascalsTriangle[points.size() - 1]
       );
       stepList.push_back(stepPoint);
     }
