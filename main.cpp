@@ -7,6 +7,7 @@
 
 #include "headers/level.hpp"
 #include "headers/properties.hpp"
+#include "headers/bezier.hpp"
 
 const char* LEVEL_FILENAME("level.cfg");
 const char* PROPERTIES_FILENAME("properties.cfg");
@@ -21,6 +22,7 @@ int main() {
   Properties* properties = LoadProperties(PROPERTIES_FILENAME, TARGET_FPS);
   Level* level = LoadLevel(LEVEL_FILENAME);
   Player* player = level->player;
+		
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(TARGET_FPS);
 
@@ -35,6 +37,7 @@ int main() {
             << properties->camLowerRight.x << " " << properties->camLowerRight.y << std::endl;
   std::cout << "CamType " << properties->camType << std::endl;
   std::cout << "CamDrift " << properties->camDrift << std::endl;
+
   while (!WindowShouldClose()) {
     float windowLeft = cameraView.target.x + properties->camUpperLeft.x;
     float windowRight = cameraView.target.x + properties->camLowerRight.x;
