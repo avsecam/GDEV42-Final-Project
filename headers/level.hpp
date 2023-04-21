@@ -3,12 +3,20 @@
 
 #include <vector>
 
-#include "entity.hpp"
 #include "bezier.hpp"
+#include "entity.hpp"
 
 struct Level {
   Player* player;
   std::vector<Obstacle*> obstacles;
+
+  void Update() {
+    for (Obstacle* o : obstacles) {
+      if (o->type == ObstacleType::MOVING) {
+        o->MoveAlongPath();
+      }
+    }
+  }
 
   void Draw() {
     for (Obstacle* o : obstacles) {
@@ -17,13 +25,13 @@ struct Level {
     player->Draw();
   }
 
-	void GeneratePaths() {
-		for (Obstacle* o : obstacles) {
-			if (o->type == ObstacleType::MOVING) {
-				o->path.CalculateCurve();
-			}
-		}
-	}
+  void GeneratePaths() {
+    for (Obstacle* o : obstacles) {
+      if (o->type == ObstacleType::MOVING) {
+        o->path.CalculateCurve();
+      }
+    }
+  }
 };
 
 Level* LoadLevel(const char filename[]) {
@@ -43,10 +51,10 @@ Level* LoadLevel(const char filename[]) {
   level->player = p;
 
   int staticObstacleCount;
-	int movingObstacleCount;
+  int movingObstacleCount;
   levelFile >> staticObstacleCount;
   levelFile >> movingObstacleCount;
-	int highestCurveOrder = 0;
+  int highestCurveOrder = 0;
   for (int i = 0; i < staticObstacleCount; ++i) {
     Vector2 oPosition;
     Vector2 oHalfSizes;
@@ -56,41 +64,56 @@ Level* LoadLevel(const char filename[]) {
     level->obstacles.push_back(o);
   }
 
-	for (int i = 0; i < movingObstacleCount; ++i) {
-    Vector2 oPosition;
+  for (int i = 0; i < movingObstacleCount; ++i) {
     Vector2 oHalfSizes;
-    levelFile >> oPosition.x >> oPosition.y;
     levelFile >> oHalfSizes.x >> oHalfSizes.y;
 
-		int oCurveOrder;
-		int oControlPointCount;
-		float speed;
-		BezierCurve oPath;
-		levelFile >> oCurveOrder >> oControlPointCount;
+    int oCurveOrder;
+    int oControlPointCount;
+    float oNumberOfSteps;
+    BezierCurve oPath;
+    levelFile >> oCurveOrder >> oControlPointCount >> oNumberOfSteps;
 
-		if (oCurveOrder <= 0) {
-			std::string errorMsg = std::string("Curve order must be a positive integer! Given curve order: ") + std::to_string(oCurveOrder);
-			throw std::invalid_argument(errorMsg);
+    if (oCurveOrder <= 0) {
+      std::string errorMsg =
+        std::string(
+          "Curve order must be a positive integer! Given curve order: "
+        ) +
+        std::to_string(oCurveOrder);
+      throw std::invalid_argument(errorMsg);
+    }
+
+		if (!ValidateControlPointCount(oCurveOrder, oControlPointCount)) {
+      std::string errorMsg =
+        std::string(
+          "Invalid control point amount! Given curve order and control point amount: "
+        ) +
+        std::to_string(oCurveOrder) +
+        std::to_string(oControlPointCount);
+      throw std::invalid_argument(errorMsg);
 		}
 
-		if (oCurveOrder > highestCurveOrder) {
-			highestCurveOrder = oCurveOrder;
-		}
+    if (oCurveOrder > highestCurveOrder) {
+      highestCurveOrder = oCurveOrder;
+    }
 
-		for (int j = 0; j < oControlPointCount; ++j) {
-			Vector2 controlPoint;
-			levelFile >> controlPoint.x >> controlPoint.y;
-			oPath.points.push_back(controlPoint);
-		}
+    for (int j = 0; j < oControlPointCount; ++j) {
+      Vector2 controlPoint;
+      levelFile >> controlPoint.x >> controlPoint.y;
+      oPath.points.push_back(controlPoint);
+    }
 
-    Obstacle* o = new Obstacle(ObstacleType::MOVING, oPosition, oHalfSizes);
-		o->path = oPath;
+    oPath.numberOfSteps = oNumberOfSteps;
+
+    Obstacle* o = new Obstacle(ObstacleType::MOVING, {0, 0}, oHalfSizes);
+    o->color = MOVING_OBSTACLE_COLOR;
+    o->path = oPath;
     level->obstacles.push_back(o);
   }
 
-	if (highestCurveOrder > 0) {
-		GeneratePascalsTriangle(highestCurveOrder);
-	}
+  if (highestCurveOrder > 0) {
+    pascalsTriangle = GeneratePascalsTriangle(highestCurveOrder);
+  }
 
   levelFile.close();
 
