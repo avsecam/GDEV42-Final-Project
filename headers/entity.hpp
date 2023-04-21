@@ -16,6 +16,8 @@ const Color PLAYER_COLOR(BLUE);
 const Color STATIC_OBSTACLE_COLOR(GRAY);
 const Color MOVING_OBSTACLE_COLOR(DARKGRAY);
 
+enum ObstacleType { STATIC, MOVING };
+
 // All entity positions are assumed to be indicated by their centers, not
 // upper-lefts
 
@@ -48,15 +50,18 @@ struct Entity {
   }
 };
 
-struct MovingEntity : public Entity {
+struct Obstacle : public Entity {
+	ObstacleType type;
+
   BezierCurve path;
   float speed;  // in percent i.e. speed = 5 means the entity moves at a rate of
                 // 5% per frame
   float progress;  // how much the entity has moved along its path
 
-  MovingEntity(
-    Vector2 _position, Vector2 _halfSizes, BezierCurve _path, Color _color = MOVING_OBSTACLE_COLOR
+  Obstacle(
+    ObstacleType _type, Vector2 _position, Vector2 _halfSizes, BezierCurve _path, Color _color = MOVING_OBSTACLE_COLOR
   ) {
+		this->type = _type;
     this->position = _position;
     this->halfSizes = _halfSizes;
     this->color = _color;
