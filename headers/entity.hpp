@@ -143,7 +143,7 @@ struct Player : public Entity {
   }
 
   void CollideHorizontal(
-    const std::vector<Entity*> obstacles, const float gap
+    const std::vector<Obstacle*> obstacles, const float gap
   ) {
     for (Entity* o : obstacles) {
       Rectangle oCollider = o->GetCollider();
@@ -159,7 +159,7 @@ struct Player : public Entity {
     }
   }
 
-  void CollideVertical(const std::vector<Entity*> obstacles, const float gap) {
+  void CollideVertical(const std::vector<Obstacle*> obstacles, const float gap) {
     bool isGroundedLastFrame = isGrounded;
 
     isGrounded = false;
