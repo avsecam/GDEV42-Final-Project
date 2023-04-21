@@ -45,10 +45,10 @@ Vector2 GetPointInCurve(
   const std::vector<Vector2> points, const float distance,
   const std::vector<int> PTCoefficients
 ) {
-  Vector2 outputPoint = {0, 0};
+  Vector2 outputPoint;
   int n = points.size() - 1;
 
-  for (int i = 0; i < points.size(); ++i) {
+  for (size_t i = 0; i < points.size(); ++i) {
     outputPoint.x += PTCoefficients[i] * points[i].x *
                      pow(1 - distance, n - i) * pow(distance, i);
     outputPoint.y += PTCoefficients[i] * points[i].y *
