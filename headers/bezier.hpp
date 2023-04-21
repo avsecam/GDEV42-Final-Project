@@ -10,13 +10,15 @@
 const std::vector<std::vector<int>> BASE_PASCALS_TRIANGLE = {{1}, {1, 1}};
 std::vector<std::vector<int>> pascalsTriangle = BASE_PASCALS_TRIANGLE;
 
+const int NUMBER_OF_STEPS = 50;
+
 std::vector<std::vector<int>> GeneratePascalsTriangle(const int depth) {
   std::vector<std::vector<int>> newPascalsTriangle = BASE_PASCALS_TRIANGLE;
 
-  for (size_t i = 2; i <= depth; i++) {
+  for (size_t i = 2; i <= depth; ++i) {
     std::vector<int> row;
     row.push_back(1);
-    for (size_t j = 1; j < i; j++) {
+    for (size_t j = 1; j < i; ++j) {
       row.push_back(
         (newPascalsTriangle[i - 1][j - 1] + newPascalsTriangle[i - 1][j])
       );
@@ -25,8 +27,8 @@ std::vector<std::vector<int>> GeneratePascalsTriangle(const int depth) {
     newPascalsTriangle.push_back(row);
   }
 
-  for (size_t i = 0; i <= depth; i++) {
-    for (size_t j = 0; j <= newPascalsTriangle[i].size() - 1; j++) {
+  for (size_t i = 0; i <= depth; ++i) {
+    for (size_t j = 0; j <= newPascalsTriangle[i].size() - 1; ++j) {
       printf("%d ", newPascalsTriangle[i][j]);
     }
     printf("\n");
@@ -46,7 +48,7 @@ Vector2 GetPointInCurve(
   Vector2 outputPoint = {0, 0};
   int n = points.size() - 1;
 
-  for (int i = 0; i < points.size(); i++) {
+  for (int i = 0; i < points.size(); ++i) {
     outputPoint.x += PTCoefficients[i] * points[i].x *
                      pow(1 - distance, n - i) * pow(distance, i);
     outputPoint.y += PTCoefficients[i] * points[i].y *
@@ -59,7 +61,6 @@ Vector2 GetPointInCurve(
 struct BezierCurve {
   std::vector<Vector2> points;
   std::vector<Vector2> stepList;
-  int numberOfSteps;
 
   void Draw() {
     for (size_t i = 0; i < stepList.size() - 1; i++) {
@@ -67,15 +68,14 @@ struct BezierCurve {
     }
   }
 
-  void CalculateCurve(int steps) {
-    numberOfSteps = steps;
-
+  void CalculateCurve() {
     if (!stepList.empty()) stepList.clear();
-    for (int i = 0; i < numberOfSteps; i++) {
+		
+    for (int i = 0; i < NUMBER_OF_STEPS; ++i) {
       Vector2 stepPoint;
 
       stepPoint = GetPointInCurve(
-        points, (float)i / numberOfSteps, pascalsTriangle[points.size() - 1]
+        points, (float)i / NUMBER_OF_STEPS, pascalsTriangle[points.size() - 1]
       );
       stepList.push_back(stepPoint);
     }
