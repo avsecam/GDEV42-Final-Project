@@ -28,7 +28,9 @@ struct Entity {
 
   Entity() = default;
 
-  Entity(Vector2 _position, Vector2 _halfSizes, Color _color = STATIC_OBSTACLE_COLOR) {
+  Entity(
+    Vector2 _position, Vector2 _halfSizes, Color _color = STATIC_OBSTACLE_COLOR
+  ) {
     this->position = _position;
     this->halfSizes = _halfSizes;
     this->color = _color;
@@ -51,20 +53,41 @@ struct Entity {
 };
 
 struct Obstacle : public Entity {
-	ObstacleType type;
+  ObstacleType type;
 
   BezierCurve path;
-  float speed;  // in percent i.e. speed = 5 means the entity moves at a rate of
-                // 5% per frame
-  float progress;  // how much the entity has moved along its path
+  bool isMovingForward = true;
+  int progress = 0;  // on what step of the curve is the obstacle in
 
   Obstacle(
-    ObstacleType _type, Vector2 _position, Vector2 _halfSizes, Color _color = MOVING_OBSTACLE_COLOR
+    ObstacleType _type, Vector2 _position, Vector2 _halfSizes,
+    Color _color = STATIC_OBSTACLE_COLOR
   ) {
-		this->type = _type;
+    this->type = _type;
     this->position = _position;
     this->halfSizes = _halfSizes;
     this->color = _color;
+  }
+
+  void MoveAlongPath() {
+    printf("%d\n", progress);
+    if (isMovingForward) {
+      if (progress < path.stepList.size() - 1) {
+        ++progress;
+        position = path.stepList[progress];
+        if (progress >= path.stepList.size() - 1) {
+          isMovingForward = false;
+        }
+      }
+    } else {
+      if (progress > 1) {
+        --progress;
+        position = path.stepList[progress];
+        if (progress <= 1) {
+          isMovingForward = true;
+        }
+      }
+    }
   }
 };
 
@@ -84,10 +107,11 @@ struct Player : public Entity {
     } else {
       airControlFactor = 1.0f;
     }
-		
+
     if (IsKeyDown(KEY_A)) {
       if (velocity.x > 0.0f) {
-        velocity.x -= properties->hAccel * properties->hOpposite * airControlFactor;
+        velocity.x -=
+          properties->hAccel * properties->hOpposite * airControlFactor;
       } else {
         velocity.x -= properties->hAccel * airControlFactor;
       }
@@ -96,7 +120,8 @@ struct Player : public Entity {
       }
     } else if (IsKeyDown(KEY_D)) {
       if (velocity.x < 0.0f) {
-        velocity.x += properties->hAccel * properties->hOpposite * airControlFactor;
+        velocity.x +=
+          properties->hAccel * properties->hOpposite * airControlFactor;
       } else {
         velocity.x += properties->hAccel * airControlFactor;
       }
@@ -145,13 +170,17 @@ struct Player : public Entity {
   void CollideHorizontal(
     const std::vector<Obstacle*> obstacles, const float gap
   ) {
-    for (Entity* o : obstacles) {
+    for (Obstacle* o : obstacles) {
       Rectangle oCollider = o->GetCollider();
       if (IsIntersecting(oCollider)) {
         // Move back
-        position.x = velocity.x > 0
-                       ? oCollider.x - (halfSizes.x) - gap
-                       : (oCollider.x + oCollider.width) + (halfSizes.x) + gap;
+        if (o->type == ObstacleType::STATIC) {
+          position.x = velocity.x > 0 ? oCollider.x - (halfSizes.x) - gap
+                                      : (oCollider.x + oCollider.width) +
+                                          (halfSizes.x) + gap;
+        } else {
+          position.x = velocity.x > 0 ? position.x - gap : position.x + gap;
+        }
 
         velocity.x = 0;
         break;
@@ -159,17 +188,23 @@ struct Player : public Entity {
     }
   }
 
-  void CollideVertical(const std::vector<Obstacle*> obstacles, const float gap) {
+  void CollideVertical(
+    const std::vector<Obstacle*> obstacles, const float gap
+  ) {
     bool isGroundedLastFrame = isGrounded;
 
     isGrounded = false;
-    for (Entity* o : obstacles) {
+    for (Obstacle* o : obstacles) {
       Rectangle oCollider = o->GetCollider();
       if (IsIntersecting(oCollider)) {
         // Move back
-        position.y = velocity.y > 0
-                       ? oCollider.y - (halfSizes.y) - gap
-                       : (oCollider.y + oCollider.height) + (halfSizes.y) + gap;
+				if (o->type == ObstacleType::STATIC) {
+          position.y = velocity.y > 0 ? oCollider.y - (halfSizes.y) - gap
+                                      : (oCollider.y + oCollider.height) +
+                                          (halfSizes.y) + gap;
+        } else {
+          position.y = oCollider.y - (halfSizes.y);
+        }
 
         if (velocity.y >= 0) {  // Grounded
           jumpFrame = 0;
