@@ -63,7 +63,7 @@ struct BezierCurve {
 
   void Draw() {
     for (size_t i = 0; i < stepList.size() - 1; i++) {
-      DrawLineEx(stepList[i], stepList[i + 1], 1, WHITE);
+      DrawLineEx(stepList[i], stepList[i + 1], 1, GREEN);
     }
   }
 

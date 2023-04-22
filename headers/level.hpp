@@ -19,6 +19,11 @@ struct Level {
   }
 
   void Draw() {
+		for (Obstacle* o : obstacles) {
+			if (o->type == ObstacleType::MOVING) {
+				o->path.Draw();
+			}
+		}
     for (Obstacle* o : obstacles) {
       o->Draw();
     }
@@ -54,7 +59,7 @@ Level* LoadLevel(const char filename[]) {
   int movingObstacleCount;
   levelFile >> staticObstacleCount;
   levelFile >> movingObstacleCount;
-  int highestCurveOrder = 0;
+  int highestControlPointCount = 0;
   for (int i = 0; i < staticObstacleCount; ++i) {
     Vector2 oPosition;
     Vector2 oHalfSizes;
@@ -93,8 +98,8 @@ Level* LoadLevel(const char filename[]) {
       throw std::invalid_argument(errorMsg);
 		}
 
-    if (oCurveOrder > highestCurveOrder) {
-      highestCurveOrder = oCurveOrder;
+    if (oControlPointCount > highestControlPointCount) {
+      highestControlPointCount = oControlPointCount;
     }
 
     for (int j = 0; j < oControlPointCount; ++j) {
@@ -111,8 +116,8 @@ Level* LoadLevel(const char filename[]) {
     level->obstacles.push_back(o);
   }
 
-  if (highestCurveOrder > 0) {
-    pascalsTriangle = GeneratePascalsTriangle(highestCurveOrder);
+  if (highestControlPointCount > 0) {
+    pascalsTriangle = GeneratePascalsTriangle(highestControlPointCount);
   }
 
   levelFile.close();
