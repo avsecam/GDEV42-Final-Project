@@ -70,7 +70,6 @@ struct Obstacle : public Entity {
   }
 
   void MoveAlongPath() {
-    printf("%d\n", progress);
     if (isMovingForward) {
       if (progress < path.stepList.size() - 1) {
         ++progress;
@@ -224,6 +223,10 @@ struct Player : public Entity {
       ++framesAfterFallingOff;
     }
   }
+};
+
+struct Item : public Entity {
+	
 };
 
 #endif
