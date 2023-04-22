@@ -21,7 +21,7 @@ const float TIMESTEP(1.0f / (float)TARGET_FPS);
 
 int main() {
   Properties* properties = LoadProperties(PROPERTIES_FILENAME, TARGET_FPS);
-  Level* level = LoadLevel(LEVEL_FILENAME);
+  Level* level = Level::LoadLevel(LEVEL_FILENAME);
   level->GeneratePaths();
 
   Player* player = level->player;
