@@ -29,6 +29,10 @@ struct Level {
     for (Obstacle* o : obstacles) {
       o->Draw();
     }
+		for (Vector2 itemSpawn : itemSpawns) {
+			DrawCircleV(itemSpawn, 10, RED);
+		}
+
     player->Draw();
   }
 
@@ -121,7 +125,15 @@ struct Level {
       pascalsTriangle = GeneratePascalsTriangle(highestControlPointCount);
     }
 
-    levelFile.close();
+    int itemSpawnCount;
+    levelFile >> itemSpawnCount;
+    for (int i = 0; i < itemSpawnCount; ++i) {
+			Vector2 itemPosition;
+			levelFile >> itemPosition.x >> itemPosition.y;
+			level->itemSpawns.push_back(itemPosition);
+		}
+    
+		levelFile.close();
 
     return level;
   }
