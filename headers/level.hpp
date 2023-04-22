@@ -57,10 +57,7 @@ struct Level {
     level->player = p;
 
     int staticObstacleCount;
-    int movingObstacleCount;
     levelFile >> staticObstacleCount;
-    levelFile >> movingObstacleCount;
-    int highestControlPointCount = 0;
     for (int i = 0; i < staticObstacleCount; ++i) {
       Vector2 oPosition;
       Vector2 oHalfSizes;
@@ -70,6 +67,9 @@ struct Level {
       level->obstacles.push_back(o);
     }
 
+    int movingObstacleCount;
+    int highestControlPointCount = 0;
+    levelFile >> movingObstacleCount;
     for (int i = 0; i < movingObstacleCount; ++i) {
       Vector2 oHalfSizes;
       levelFile >> oHalfSizes.x >> oHalfSizes.y;
