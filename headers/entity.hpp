@@ -25,6 +25,7 @@ struct Entity {
   Vector2 position;
   Vector2 halfSizes;
   Color color;
+  int health;
 
   Entity() = default;
 

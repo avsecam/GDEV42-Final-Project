@@ -61,25 +61,6 @@ Properties* LoadProperties(const char filename[], const int targetFps) {
 
       continue;
     }
-
-    if (inputProperty == "CAM_1_EDGES"){
-      std::string edges = input.substr(splitter+1, input.length());
-      splitter = edges.find(" ");
-      properties->cam1UpperLeft.x = stof(edges.substr(0, splitter));
-      
-      edges = edges.substr(splitter+1, edges.length());
-      splitter = edges.find(" ");
-      properties->cam1UpperLeft.y = stof(edges.substr(0, splitter));
-      
-      edges = edges.substr(splitter+1, edges.length()); 
-      splitter = edges.find(" ");
-      properties->cam1LowerRight.x = stof(edges.substr(0, splitter));
-
-      edges = edges.substr(splitter+1, edges.length());
-      properties->cam1LowerRight.y = stof(edges);
-
-      continue;
-    }
     
     float propertyValue = stof(input.substr(splitter, input.length()));
 
@@ -109,8 +90,6 @@ Properties* LoadProperties(const char filename[], const int targetFps) {
       properties->vVelMax = propertyValue / targetFps;
     } else if (inputProperty == "GAP") {
       properties->gap = propertyValue;
-    } else if (inputProperty == "CAM_TYPE") {
-      properties->camType = static_cast<int>(propertyValue);
     } else if (inputProperty == "CAM_DRIFT") {
       properties->camDrift = propertyValue / targetFps;
     }
