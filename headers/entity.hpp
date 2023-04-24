@@ -17,6 +17,7 @@ const Color STATIC_OBSTACLE_COLOR(GRAY);
 const Color MOVING_OBSTACLE_COLOR(DARKGRAY);
 
 enum ObstacleType { STATIC, MOVING };
+enum ItemType { TIME, HEALTH };
 
 // All entity positions are assumed to be indicated by their centers, not
 // upper-lefts
@@ -227,7 +228,9 @@ struct Player : public Entity {
 };
 
 struct Item : public Entity {
-	
+	ItemType type;
+
+	using Entity::Entity;
 };
 
 #endif
