@@ -12,11 +12,16 @@
 const float PLAYER_WIDTH(24);
 const float PLAYER_HEIGHT(32);
 const Color PLAYER_COLOR(BLUE);
+const int MAX_PLAYER_HEALTH(10);
+
+const Color ENEMY_COLOR(RED);
 
 const Color STATIC_OBSTACLE_COLOR(GRAY);
 const Color MOVING_OBSTACLE_COLOR(DARKGRAY);
 
 enum ObstacleType { STATIC, MOVING };
+enum ItemType { TIME, HEALTH };
+enum Heading { LEFT, RIGHT };
 
 // All entity positions are assumed to be indicated by their centers, not
 // upper-lefts
@@ -48,7 +53,7 @@ struct Entity {
   }
 
   bool IsIntersecting(Rectangle rec) {
-    return CheckCollisionRecs(GetCollider(), rec);
+    return CheckCollisionRecs(rec, GetCollider());
   }
 };
 
@@ -90,14 +95,51 @@ struct Obstacle : public Entity {
   }
 };
 
-struct Player : public Entity {
-  Vector2 velocity = Vector2Zero();
+struct Character : public Entity {
+  Vector2 velocity;
+  int health;
+
+  Character(Vector2 _position, Vector2 _halfSizes, Color _color = ENEMY_COLOR) {
+    this->position = _position;
+    this->halfSizes = _halfSizes;
+    this->color = _color;
+    this->velocity = Vector2Zero();
+  }
+
+  virtual void MoveHorizontal(const Properties* properties) = 0;
+  virtual void MoveVertical(const Properties* properties) = 0;
+  virtual void CollideHorizontal(
+    const std::vector<Obstacle*> obstacles, const float gap
+  ) = 0;
+  virtual void CollideVertical(
+    const std::vector<Obstacle*> obstacles, const float gap
+  ) = 0;
+
+ protected:
+  void HandleGravity(const Properties* properties) {
+    velocity.y += properties->gravity;
+  }
+
+  void LimitVerticalVelocity(const Properties* properties) {
+    velocity.y = Clamp(velocity.y, -INT32_MAX, properties->vVelMax);
+  }
+
+  void ApplyVerticalVelocity() { position.y += velocity.y; }
+};
+
+struct Player : public Character {
   float airControlFactor = 1.0f;
   bool isGrounded = false;
   int jumpFrame = 0;
   int framesAfterFallingOff = 0;
 
-  using Entity::Entity;
+  Player(
+    Vector2 _position, Vector2 _halfSizes, int _health = MAX_PLAYER_HEALTH,
+    Color _color = PLAYER_COLOR
+  )
+      : Character(_position, _halfSizes, _color) {
+				this->health = MAX_PLAYER_HEALTH;
+			}
 
   void MoveHorizontal(const Properties* properties) {
     // Moving through air
@@ -140,7 +182,8 @@ struct Player : public Entity {
 
   void MoveVertical(const Properties* properties) {
     // Jump handling
-    if (IsKeyPressed(KEY_SPACE) && jumpFrame <= 0 && framesAfterFallingOff <= properties->vSafe) {
+    if (IsKeyPressed(KEY_SPACE) && jumpFrame <= 0 && framesAfterFallingOff <= properties->vSafe)
+    {
       velocity.y += properties->vAccel;
       ++jumpFrame;
     } else if (IsKeyDown(KEY_SPACE) && velocity.y < 0) {  // In jump
@@ -160,10 +203,9 @@ struct Player : public Entity {
       }
     }
 
-    velocity.y += properties->gravity;
-    velocity.y = Clamp(velocity.y, -INT32_MAX, properties->vVelMax);
-
-    position.y += velocity.y;
+    HandleGravity(properties);
+    LimitVerticalVelocity(properties);
+    ApplyVerticalVelocity();
   }
 
   void CollideHorizontal(
@@ -197,7 +239,7 @@ struct Player : public Entity {
       Rectangle oCollider = o->GetCollider();
       if (IsIntersecting(oCollider)) {
         // Move back
-				if (o->type == ObstacleType::STATIC) {
+        if (o->type == ObstacleType::STATIC) {
           position.y = velocity.y > 0 ? oCollider.y - (halfSizes.y) - gap
                                       : (oCollider.y + oCollider.height) +
                                           (halfSizes.y) + gap;
@@ -226,7 +268,9 @@ struct Player : public Entity {
 };
 
 struct Item : public Entity {
-	
+  ItemType type;
+
+  using Entity::Entity;
 };
 
 #endif
