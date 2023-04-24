@@ -53,8 +53,12 @@ struct Entity {
   }
 
   bool IsIntersecting(Rectangle rec) {
-    return CheckCollisionRecs(GetCollider(), rec);
+    return CheckCollisionRecs(rec, GetCollider());
   }
+
+	bool IsIntersecting(Vector2 point) {
+		return CheckCollisionPointRec(point, GetCollider());
+	}
 };
 
 struct Obstacle : public Entity {
