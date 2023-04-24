@@ -56,9 +56,9 @@ struct Entity {
     return CheckCollisionRecs(rec, GetCollider());
   }
 
-	bool IsIntersecting(Vector2 point) {
-		return CheckCollisionPointRec(point, GetCollider());
-	}
+  bool IsIntersecting(Vector2 point) {
+    return CheckCollisionPointRec(point, GetCollider());
+  }
 };
 
 struct Obstacle : public Entity {
@@ -102,19 +102,21 @@ struct Obstacle : public Entity {
 struct Character : public Entity {
   Vector2 velocity;
 
-  Character(
-    Vector2 _position, Vector2 _halfSizes, Color _color = ENEMY_COLOR
-  ) {
+  Character(Vector2 _position, Vector2 _halfSizes, Color _color = ENEMY_COLOR) {
     this->position = _position;
     this->halfSizes = _halfSizes;
     this->color = _color;
-		this->velocity = Vector2Zero();
+    this->velocity = Vector2Zero();
   }
 
   virtual void MoveHorizontal(const Properties* properties) = 0;
   virtual void MoveVertical(const Properties* properties) = 0;
-  virtual void CollideHorizontal(const std::vector<Obstacle*> obstacles, const float gap) = 0;
-  virtual void CollideVertical(const std::vector<Obstacle*> obstacles, const float gap) = 0;
+  virtual void CollideHorizontal(
+    const std::vector<Obstacle*> obstacles, const float gap
+  ) = 0;
+  virtual void CollideVertical(
+    const std::vector<Obstacle*> obstacles, const float gap
+  ) = 0;
 
  protected:
   void HandleGravity(const Properties* properties) {
@@ -134,7 +136,7 @@ struct Player : public Character {
   int jumpFrame = 0;
   int framesAfterFallingOff = 0;
 
-	using Character::Character;
+  using Character::Character;
 
   void MoveHorizontal(const Properties* properties) {
     // Moving through air
@@ -264,8 +266,18 @@ struct Player : public Character {
 struct Enemy : public Character {
   Heading heading = Heading::LEFT;
 
-	using Character::Character;
+  using Character::Character;
 
+  void Update(
+    const Properties* properties, const std::vector<Obstacle*> obstacles
+  ) {
+    MoveHorizontal(properties);
+    CollideHorizontal(obstacles, properties->gap);
+    MoveVertical(properties);
+    CollideVertical(obstacles, properties->gap);
+  }
+
+ private:
   void MoveHorizontal(const Properties* properties) {
     if (heading == Heading::LEFT) {
       if (velocity.x > 0.0f) {
@@ -296,7 +308,7 @@ struct Enemy : public Character {
     position.x += velocity.x;
   }
 
-	void MoveVertical(const Properties* properties) {
+  void MoveVertical(const Properties* properties) {
     HandleGravity(properties);
     LimitVerticalVelocity(properties);
     ApplyVerticalVelocity();
@@ -349,7 +361,6 @@ struct Enemy : public Character {
     }
   }
 
- private:
   Vector2 GetBottomLeft() {
     return {
       this->position.x - this->halfSizes.x,
