@@ -57,7 +57,7 @@ struct Level {
     Vector2 initialPlayerPosition;
     levelFile >> initialPlayerPosition.x >> initialPlayerPosition.y;
     Player* p = new Player(
-      initialPlayerPosition, {PLAYER_WIDTH / 2, PLAYER_HEIGHT / 2}, PLAYER_COLOR
+      initialPlayerPosition, {PLAYER_WIDTH / 2, PLAYER_HEIGHT / 2}
     );
     level->player = p;
 

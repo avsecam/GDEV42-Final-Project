@@ -8,6 +8,7 @@
 #include "headers/bezier.hpp"
 #include "headers/level.hpp"
 #include "headers/properties.hpp"
+#include "headers/enemies.hpp"
 
 const char *LEVEL_FILENAME("level.cfg");
 const char *PROPERTIES_FILENAME("properties.cfg");
@@ -26,7 +27,6 @@ int main()
   level->GeneratePaths();
 
   Player *player = level->player;
-	player->health = MAX_PLAYER_HEALTH;
 
 	RangedEnemy *enemy = new RangedEnemy({300, 400}, {20, 20});
 	enemy->health = 10;

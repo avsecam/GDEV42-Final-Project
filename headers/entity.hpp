@@ -12,7 +12,7 @@
 const float PLAYER_WIDTH(24);
 const float PLAYER_HEIGHT(32);
 const Color PLAYER_COLOR(BLUE);
-const int MAX_PLAYER_HEALTH(100);
+const int MAX_PLAYER_HEALTH(10);
 
 const Color ENEMY_COLOR(RED);
 
@@ -97,7 +97,7 @@ struct Obstacle : public Entity {
 
 struct Character : public Entity {
   Vector2 velocity;
-	int health;
+  int health;
 
   Character(Vector2 _position, Vector2 _halfSizes, Color _color = ENEMY_COLOR) {
     this->position = _position;
@@ -133,7 +133,13 @@ struct Player : public Character {
   int jumpFrame = 0;
   int framesAfterFallingOff = 0;
 
-  using Character::Character;
+  Player(
+    Vector2 _position, Vector2 _halfSizes, int _health = MAX_PLAYER_HEALTH,
+    Color _color = PLAYER_COLOR
+  )
+      : Character(_position, _halfSizes, _color) {
+				this->health = MAX_PLAYER_HEALTH;
+			}
 
   void MoveHorizontal(const Properties* properties) {
     // Moving through air
@@ -260,7 +266,6 @@ struct Player : public Character {
     }
   }
 };
-
 
 struct Item : public Entity {
   ItemType type;
