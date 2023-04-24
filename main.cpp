@@ -27,11 +27,8 @@ int main()
 
   Player *player = level->player;
 
-	Enemy *enemy = new Enemy;
-	enemy->color = GREEN;
-	enemy->halfSizes = {20, 20};
+	Enemy *enemy = new Enemy({300, 400}, {20, 20});
 	enemy->health = 10;
-	enemy->position = {150, 500};
 
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(TARGET_FPS);
@@ -70,6 +67,8 @@ int main()
 
     // Check top collision if moving upwards, bottom if downwards
     player->CollideVertical(level->obstacles, properties->gap);
+
+		enemy->Update(properties, level->obstacles);
 
     float cameraPushX = 0.0f;
     float cameraPushY = 0.0f;

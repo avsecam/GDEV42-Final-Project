@@ -55,10 +55,6 @@ struct Entity {
   bool IsIntersecting(Rectangle rec) {
     return CheckCollisionRecs(rec, GetCollider());
   }
-
-  bool IsIntersecting(Vector2 point) {
-    return CheckCollisionPointRec(point, GetCollider());
-  }
 };
 
 struct Obstacle : public Entity {
@@ -317,6 +313,30 @@ struct Enemy : public Character {
   void CollideHorizontal(
     const std::vector<Obstacle*> obstacles, const float gap
   ) {
+    // Ledge check, don't fall!
+    Obstacle* oLeft = nullptr;
+    Obstacle* oRight = nullptr;
+    for (Obstacle* o : obstacles) {
+      if (o->IsIntersecting(GetBottomLeftCollider())) {
+        oLeft = o;
+        break;
+      }
+    }
+    if (oLeft) {
+      for (Obstacle* o : obstacles) {
+        if (o->IsIntersecting(GetBottomRightCollider())) {
+          oRight = o;
+          break;
+        }
+      }
+    }
+
+    if (!oLeft || !oRight) {
+      heading = heading == Heading::LEFT ? Heading::RIGHT : Heading::LEFT;
+      return;
+    }
+
+    // Collide with walls
     for (Obstacle* o : obstacles) {
       Rectangle oCollider = o->GetCollider();
       if (IsIntersecting(oCollider)) {
@@ -329,7 +349,7 @@ struct Enemy : public Character {
           position.x = velocity.x > 0 ? position.x - gap : position.x + gap;
         }
 
-        velocity.x = 0;
+        heading = heading == Heading::LEFT ? Heading::RIGHT : Heading::LEFT;
         break;
       }
     }
@@ -361,16 +381,16 @@ struct Enemy : public Character {
     }
   }
 
-  Vector2 GetBottomLeft() {
+  Rectangle GetBottomLeftCollider() {
     return {
-      this->position.x - this->halfSizes.x,
-      this->position.y + this->halfSizes.y};
+      this->position.x - this->halfSizes.x - 10,
+      this->position.y + this->halfSizes.y, 10, 10};
   }
 
-  Vector2 GetBottomRight() {
+  Rectangle GetBottomRightCollider() {
     return {
       this->position.x + this->halfSizes.x,
-      this->position.y + this->halfSizes.y};
+      this->position.y + this->halfSizes.y, 10, 10};
   }
 };
 
