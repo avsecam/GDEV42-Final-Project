@@ -12,6 +12,7 @@
 const float PLAYER_WIDTH(24);
 const float PLAYER_HEIGHT(32);
 const Color PLAYER_COLOR(BLUE);
+const int MAX_PLAYER_HEALTH(100);
 
 const Color ENEMY_COLOR(RED);
 
@@ -29,7 +30,6 @@ struct Entity {
   Vector2 position;
   Vector2 halfSizes;
   Color color;
-  int health;
 
   Entity() = default;
 
@@ -97,6 +97,7 @@ struct Obstacle : public Entity {
 
 struct Character : public Entity {
   Vector2 velocity;
+	int health;
 
   Character(Vector2 _position, Vector2 _halfSizes, Color _color = ENEMY_COLOR) {
     this->position = _position;
@@ -175,7 +176,8 @@ struct Player : public Character {
 
   void MoveVertical(const Properties* properties) {
     // Jump handling
-    if (IsKeyPressed(KEY_SPACE) && jumpFrame <= 0 && framesAfterFallingOff <= properties->vSafe) {
+    if (IsKeyPressed(KEY_SPACE) && jumpFrame <= 0 && framesAfterFallingOff <= properties->vSafe)
+    {
       velocity.y += properties->vAccel;
       ++jumpFrame;
     } else if (IsKeyDown(KEY_SPACE) && velocity.y < 0) {  // In jump
@@ -259,7 +261,7 @@ struct Player : public Character {
   }
 };
 
-struct Enemy : public Character {
+struct RangedEnemy : public Character {
   Heading heading = Heading::LEFT;
 
   using Character::Character;
@@ -391,6 +393,39 @@ struct Enemy : public Character {
     return {
       this->position.x + this->halfSizes.x,
       this->position.y + this->halfSizes.y, 10, 10};
+  }
+};
+
+struct MeleeEnemy : public Character {
+  bool isMovingLeft = false;
+  bool isMovingRight = false;
+
+  using Character::Character;
+
+  void MoveHorizontal(const Properties* properties) {
+    if (isMovingLeft) {
+      if (velocity.x > 0.0f) {
+        velocity.x -= properties->hAccel * properties->hOpposite;
+      } else {
+        velocity.x -= properties->hAccel;
+      }
+      if (abs(velocity.x) >= properties->hVelMax) {
+        velocity.x = -properties->hVelMax;
+      }
+    } else if (isMovingRight) {
+      if (velocity.x < 0.0f) {
+        velocity.x += properties->hAccel * properties->hOpposite;
+      } else {
+        velocity.x += properties->hAccel;
+      }
+      if (abs(velocity.x) >= properties->hVelMax) {
+        velocity.x = properties->hVelMax;
+      }
+    } else {
+      velocity.x *= properties->hCoeff;  // Slow down
+    }
+
+    position.x += velocity.x;
   }
 };
 

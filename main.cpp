@@ -26,8 +26,9 @@ int main()
   level->GeneratePaths();
 
   Player *player = level->player;
+	player->health = MAX_PLAYER_HEALTH;
 
-	Enemy *enemy = new Enemy({300, 400}, {20, 20});
+	RangedEnemy *enemy = new RangedEnemy({300, 400}, {20, 20});
 	enemy->health = 10;
 
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);

@@ -9,6 +9,7 @@
 struct Level {
   Player* player;
   std::vector<Obstacle*> obstacles;
+  std::vector<MeleeEnemy*> meleeEnemies;
 
   std::vector<Vector2> itemSpawns;
 
