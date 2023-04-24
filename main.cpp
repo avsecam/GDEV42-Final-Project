@@ -8,6 +8,7 @@
 #include "headers/bezier.hpp"
 #include "headers/level.hpp"
 #include "headers/properties.hpp"
+#include "headers/uihandler.hpp"
 
 const char* LEVEL_FILENAME("level.cfg");
 const char* PROPERTIES_FILENAME("properties.cfg");

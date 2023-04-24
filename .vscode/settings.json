@@ -35,8 +35,11 @@
   ],
 	"C_Cpp_Runner.useAddressSanitizer": false,
 	"files.associations": {
-		"*.ejs": "html",
-		"*.fsh": "hlsl",
-		"iosfwd": "cpp"
-	}
+    "*.ejs": "html",
+    "*.fsh": "hlsl",
+    "iosfwd": "cpp",
+    "vector": "cpp",
+    "iostream": "cpp",
+    "fstream": "cpp"
+  }
 }
