@@ -5,6 +5,7 @@
 
 #include "bezier.hpp"
 #include "entity.hpp"
+#include "enemies.hpp"
 
 struct Level {
   Player* player;

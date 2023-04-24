@@ -1,7 +1,7 @@
 #ifndef ENEMIES
 #define ENEMIES
 
-#include <entity.hpp>
+#include "entity.hpp"
 
 struct RangedEnemy : public Character {
   Heading heading = Heading::LEFT;

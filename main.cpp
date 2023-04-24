@@ -14,8 +14,8 @@
 const char *LEVEL_FILENAME("level.cfg");
 const char *PROPERTIES_FILENAME("properties.cfg");
 
-const float WINDOW_WIDTH(800);
-const float WINDOW_HEIGHT(600);
+const float WINDOW_WIDTH(1280);
+const float WINDOW_HEIGHT(720);
 const char *WINDOW_TITLE("HAKENSLASH THE PLATFORMER");
 
 const int TARGET_FPS(60);
