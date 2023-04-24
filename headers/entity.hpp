@@ -13,11 +13,14 @@ const float PLAYER_WIDTH(24);
 const float PLAYER_HEIGHT(32);
 const Color PLAYER_COLOR(BLUE);
 
+const Color ENEMY_COLOR(RED);
+
 const Color STATIC_OBSTACLE_COLOR(GRAY);
 const Color MOVING_OBSTACLE_COLOR(DARKGRAY);
 
 enum ObstacleType { STATIC, MOVING };
 enum ItemType { TIME, HEALTH };
+enum Heading { LEFT, RIGHT };
 
 // All entity positions are assumed to be indicated by their centers, not
 // upper-lefts
@@ -93,27 +96,41 @@ struct Obstacle : public Entity {
 };
 
 struct Character : public Entity {
-  Vector2 velocity = Vector2Zero();
+  Vector2 velocity;
 
-	using Entity::Entity;
+  Character(
+    Vector2 _position, Vector2 _halfSizes, Color _color = ENEMY_COLOR
+  ) {
+    this->position = _position;
+    this->halfSizes = _halfSizes;
+    this->color = _color;
+		this->velocity = Vector2Zero();
+  }
 
-	void MoveVertical(const Properties* properties) {
-		// gravity handling and velocity limiting
+  virtual void MoveHorizontal(const Properties* properties) = 0;
+  virtual void MoveVertical(const Properties* properties) = 0;
+  virtual void CollideHorizontal(const std::vector<Obstacle*> obstacles, const float gap) = 0;
+  virtual void CollideVertical(const std::vector<Obstacle*> obstacles, const float gap) = 0;
+
+ protected:
+  void HandleGravity(const Properties* properties) {
     velocity.y += properties->gravity;
+  }
+
+  void LimitVerticalVelocity(const Properties* properties) {
     velocity.y = Clamp(velocity.y, -INT32_MAX, properties->vVelMax);
-		
-    position.y += velocity.y;
-	}
+  }
+
+  void ApplyVerticalVelocity() { position.y += velocity.y; }
 };
 
 struct Player : public Character {
-  Vector2 velocity = Vector2Zero();
   float airControlFactor = 1.0f;
   bool isGrounded = false;
   int jumpFrame = 0;
   int framesAfterFallingOff = 0;
 
-  using Entity::Entity;
+	using Character::Character;
 
   void MoveHorizontal(const Properties* properties) {
     // Moving through air
@@ -176,7 +193,9 @@ struct Player : public Character {
       }
     }
 
-    Character::MoveVertical(properties);
+    HandleGravity(properties);
+    LimitVerticalVelocity(properties);
+    ApplyVerticalVelocity();
   }
 
   void CollideHorizontal(
@@ -238,31 +257,106 @@ struct Player : public Character {
   }
 };
 
-struct Enemy : public Entity {
+struct Enemy : public Character {
+  Heading heading = Heading::LEFT;
 
-	void Draw() {
-		Entity::Draw();
-		DrawCircleV(GetBottomLeft(), 5, RED);
-		DrawCircleV(GetBottomRight(), 5, RED);
-	}
+	using Character::Character;
 
-	void MoveLeft() {
-	}
+  void MoveHorizontal(const Properties* properties) {
+    if (heading == Heading::LEFT) {
+      if (velocity.x > 0.0f) {
+        velocity.x -= properties->hAccel * properties->hOpposite;
+      } else {
+        velocity.x -= properties->hAccel;
+      }
+      if (abs(velocity.x) >= properties->hVelMax) {
+        velocity.x = -properties->hVelMax;
+      }
+    } else if (heading == Heading::RIGHT) {
+      if (velocity.x < 0.0f) {
+        velocity.x += properties->hAccel * properties->hOpposite;
+      } else {
+        velocity.x += properties->hAccel;
+      }
+      if (abs(velocity.x) >= properties->hVelMax) {
+        velocity.x = properties->hVelMax;
+      }
+    } else {
+      velocity.x *= properties->hCoeff;  // Slow down on no input
+    }
 
-	private:
-	Vector2 GetBottomLeft() {
-		return {
-			this->position.x - this->halfSizes.x,
-			this->position.y + this->halfSizes.y
-		};
-	}
+    // Minimum horizontal movement threshold
+    if (abs(velocity.x) <= properties->hVelMin) {
+      velocity.x = 0.0f;
+    }
+    position.x += velocity.x;
+  }
 
-	Vector2 GetBottomRight() {
-		return {
-			this->position.x + this->halfSizes.x,
-			this->position.y + this->halfSizes.y
-		};
-	}
+	void MoveVertical(const Properties* properties) {
+    HandleGravity(properties);
+    LimitVerticalVelocity(properties);
+    ApplyVerticalVelocity();
+  }
+
+  void CollideHorizontal(
+    const std::vector<Obstacle*> obstacles, const float gap
+  ) {
+    for (Obstacle* o : obstacles) {
+      Rectangle oCollider = o->GetCollider();
+      if (IsIntersecting(oCollider)) {
+        // Move back
+        if (o->type == ObstacleType::STATIC) {
+          position.x = velocity.x > 0 ? oCollider.x - (halfSizes.x) - gap
+                                      : (oCollider.x + oCollider.width) +
+                                          (halfSizes.x) + gap;
+        } else {
+          position.x = velocity.x > 0 ? position.x - gap : position.x + gap;
+        }
+
+        velocity.x = 0;
+        break;
+      }
+    }
+  }
+
+  void CollideVertical(
+    const std::vector<Obstacle*> obstacles, const float gap
+  ) {
+    for (Obstacle* o : obstacles) {
+      Rectangle oCollider = o->GetCollider();
+      if (IsIntersecting(oCollider)) {
+        // Move back
+        if (o->type == ObstacleType::STATIC) {
+          position.y = velocity.y > 0 ? oCollider.y - (halfSizes.y) - gap
+                                      : (oCollider.y + oCollider.height) +
+                                          (halfSizes.y) + gap;
+        } else {
+          position.y = oCollider.y - (halfSizes.y);
+        }
+
+        if (velocity.y >= 0) {  // Grounded
+          velocity.y = 0;
+        } else {  // Na-untog
+          velocity.y = -velocity.y;
+        }
+
+        break;
+      }
+    }
+  }
+
+ private:
+  Vector2 GetBottomLeft() {
+    return {
+      this->position.x - this->halfSizes.x,
+      this->position.y + this->halfSizes.y};
+  }
+
+  Vector2 GetBottomRight() {
+    return {
+      this->position.x + this->halfSizes.x,
+      this->position.y + this->halfSizes.y};
+  }
 };
 
 struct Item : public Entity {
