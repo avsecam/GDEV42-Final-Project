@@ -92,7 +92,21 @@ struct Obstacle : public Entity {
   }
 };
 
-struct Player : public Entity {
+struct Character : public Entity {
+  Vector2 velocity = Vector2Zero();
+
+	using Entity::Entity;
+
+	void MoveVertical(const Properties* properties) {
+		// gravity handling and velocity limiting
+    velocity.y += properties->gravity;
+    velocity.y = Clamp(velocity.y, -INT32_MAX, properties->vVelMax);
+		
+    position.y += velocity.y;
+	}
+};
+
+struct Player : public Character {
   Vector2 velocity = Vector2Zero();
   float airControlFactor = 1.0f;
   bool isGrounded = false;
@@ -162,10 +176,7 @@ struct Player : public Entity {
       }
     }
 
-    velocity.y += properties->gravity;
-    velocity.y = Clamp(velocity.y, -INT32_MAX, properties->vVelMax);
-
-    position.y += velocity.y;
+    Character::MoveVertical(properties);
   }
 
   void CollideHorizontal(
@@ -199,7 +210,7 @@ struct Player : public Entity {
       Rectangle oCollider = o->GetCollider();
       if (IsIntersecting(oCollider)) {
         // Move back
-				if (o->type == ObstacleType::STATIC) {
+        if (o->type == ObstacleType::STATIC) {
           position.y = velocity.y > 0 ? oCollider.y - (halfSizes.y) - gap
                                       : (oCollider.y + oCollider.height) +
                                           (halfSizes.y) + gap;
@@ -227,10 +238,37 @@ struct Player : public Entity {
   }
 };
 
-struct Item : public Entity {
-	ItemType type;
+struct Enemy : public Entity {
 
-	using Entity::Entity;
+	void Draw() {
+		Entity::Draw();
+		DrawCircleV(GetBottomLeft(), 5, RED);
+		DrawCircleV(GetBottomRight(), 5, RED);
+	}
+
+	void MoveLeft() {
+	}
+
+	private:
+	Vector2 GetBottomLeft() {
+		return {
+			this->position.x - this->halfSizes.x,
+			this->position.y + this->halfSizes.y
+		};
+	}
+
+	Vector2 GetBottomRight() {
+		return {
+			this->position.x + this->halfSizes.x,
+			this->position.y + this->halfSizes.y
+		};
+	}
+};
+
+struct Item : public Entity {
+  ItemType type;
+
+  using Entity::Entity;
 };
 
 #endif

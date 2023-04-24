@@ -27,6 +27,12 @@ int main()
 
   Player *player = level->player;
 
+	Enemy *enemy = new Enemy;
+	enemy->color = GREEN;
+	enemy->halfSizes = {20, 20};
+	enemy->health = 10;
+	enemy->position = {150, 500};
+
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(TARGET_FPS);
 
@@ -121,6 +127,7 @@ int main()
     ClearBackground(WHITE);
 
     level->Draw();
+		enemy->Draw();
 
     // DrawRectangleLines(
     //     windowLeft, windowTop, windowRight - windowLeft, windowBot - windowTop,
