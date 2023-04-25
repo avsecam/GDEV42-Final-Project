@@ -16,6 +16,10 @@ const int MAX_PLAYER_HEALTH(10);
 
 const Color ENEMY_COLOR(RED);
 
+const float BULLET_HALF_SIZE(10);
+const float BULLET_SPEED(100.0f);
+const Color BULLET_COLOR(MAGENTA);
+
 const Color STATIC_OBSTACLE_COLOR(GRAY);
 const Color MOVING_OBSTACLE_COLOR(DARKGRAY);
 
@@ -55,8 +59,6 @@ struct Entity {
   bool IsIntersecting(Rectangle rec) {
     return CheckCollisionRecs(rec, GetCollider());
   }
-
-
 };
 
 struct Obstacle : public Entity {
@@ -138,8 +140,6 @@ struct Character : public Entity {
   }
 
   void ApplyVerticalVelocity() { position.y += velocity.y; }
-
-  
 };
 
 struct Player : public Character {
@@ -156,8 +156,8 @@ struct Player : public Character {
     Color _color = PLAYER_COLOR
   )
       : Character(_position, _halfSizes, _color) {
-				this->health = MAX_PLAYER_HEALTH;
-			}
+    this->health = MAX_PLAYER_HEALTH;
+  }
 
   void MoveHorizontal(const Properties* properties) {
     // Moving through air
@@ -285,6 +285,30 @@ struct Player : public Character {
       ++framesAfterFallingOff;
     }
   }
+};
+
+struct Bullet : public Entity {
+  Vector2 direction;
+  float speed;
+
+  Bullet(
+    Vector2 _position, Vector2 _direction,
+		float _speed = BULLET_SPEED,
+    Vector2 _halfSizes = {BULLET_HALF_SIZE, BULLET_HALF_SIZE},
+    Color _color = BULLET_COLOR
+  )
+      : Entity(_position, _halfSizes, _color) {
+    this->direction = _direction;
+    this->speed = _speed;
+  }
+
+  void Update(const float timestep) {
+    position = Vector2Add(position, Vector2Scale(Vector2Normalize(direction), speed * timestep));
+  }
+
+	bool ShouldDelete(Player* player, const Rectangle limits) {
+		return !CheckCollisionPointRec(position, limits) || IsIntersecting(player->GetCollider());
+	}
 };
 
 struct Item : public Entity {

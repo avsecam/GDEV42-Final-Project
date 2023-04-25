@@ -1,6 +1,6 @@
 
 .vscode/settings.json
-main.exe
+*.exe
 raylib/build.zig
 raylib/CMakeLists.txt
 raylib/config.h

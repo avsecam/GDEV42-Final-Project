@@ -11,28 +11,34 @@ struct Level {
   Player* player;
   std::vector<Obstacle*> obstacles;
   std::vector<MeleeEnemy*> meleeEnemies;
+  std::vector<RangedEnemy*> rangedEnemies;
+	std::vector<Bullet*> bullets;
 
   std::vector<Vector2> itemSpawns;
 
-  void Update() {
+  void Update(Rectangle limits, const float timestep) {
     for (Obstacle* o : obstacles) {
       if (o->type == ObstacleType::MOVING) {
         o->MoveAlongPath();
       }
     }
+		for (Bullet* b : bullets) {
+			b->Update(timestep);
+		}
   }
 
   void Draw() {
     for (Obstacle* o : obstacles) {
-      if (o->type == ObstacleType::MOVING) {
-        o->path.Draw();
-      }
-    }
-    for (Obstacle* o : obstacles) {
       o->Draw();
     }
+		for (RangedEnemy* r : rangedEnemies) {
+			r->Draw();
+		}
 		for (Vector2 itemSpawn : itemSpawns) {
 			DrawCircleV(itemSpawn, 10, RED);
+		}
+		for (Bullet* b : bullets) {
+			b->Draw();
 		}
 
     player->Draw();
