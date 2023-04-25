@@ -389,7 +389,7 @@ struct MeleeEnemy : public Character
     {
       p->health -= 1;
       std::cout<<p->health<<std::endl;
-      //delete this;
+      remove;
     }
   }
 };

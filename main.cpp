@@ -40,7 +40,7 @@ int main()
   Camera2D cameraView = {0};
   cameraView.target = {player->position.x, player->position.y};
   cameraView.offset = {WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2};
-  cameraView.zoom = 1.0f;
+  cameraView.zoom = 1.3f;
 
   Vector2 cameraPos = {player->position.x, player->position.y};
 
@@ -137,7 +137,7 @@ int main()
     // DrawRectangleLines(
     //     windowLeft, windowTop, windowRight - windowLeft, windowBot - windowTop,
     //     RED);
-    delete menemy;
+    
     EndDrawing();
   }
 
