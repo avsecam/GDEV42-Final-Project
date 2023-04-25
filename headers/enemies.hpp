@@ -185,6 +185,7 @@ struct MeleeEnemy : public Character
   int JUMP_CHANCE = 95;
   bool isFollowingPlayer = false;
   using Character::Character;
+  float speedModifier = 0.5;
 
   void Update(
       const Properties *properties, const std::vector<Obstacle *> obstacles, Player *player)
@@ -203,7 +204,7 @@ struct MeleeEnemy : public Character
     if (p->position.y < position.y+10 && p->position.y > position.y-10)
     {
       isFollowingPlayer = true;
-      std::cout << "FOLLOWING" << std::endl;
+      //std::cout << "FOLLOWING" << std::endl;
       if (p->position.x > position.x)
       {
         isMovingLeft = false;
@@ -217,7 +218,7 @@ struct MeleeEnemy : public Character
     }
     else{
       isFollowingPlayer = false;
-      std::cout << "NOT FOLLOWING"<< std::endl;
+      //std::cout << "NOT FOLLOWING"<< std::endl;
     }
   }
 
@@ -230,7 +231,7 @@ struct MeleeEnemy : public Character
       if (rng_num > JUMP_CHANCE)
       {
         isJumping = true;
-        std::cout << "GONNA JUMP" << std::endl;
+        //std::cout << "GONNA JUMP" << std::endl;
       }
     }
   }
@@ -254,9 +255,9 @@ struct MeleeEnemy : public Character
       {
         velocity.x -= properties->hAccel;
       }
-      if (abs(velocity.x) >= (properties->hVelMax * 0.8))
+      if (abs(velocity.x) >= (properties->hVelMax * speedModifier))
       {
-        velocity.x = -(properties->hVelMax * 0.8);
+        velocity.x = -(properties->hVelMax * speedModifier);
       }
     }
     else if (isMovingRight)
@@ -269,9 +270,9 @@ struct MeleeEnemy : public Character
       {
         velocity.x += properties->hAccel;
       }
-      if (abs(velocity.x) >= (properties->hVelMax * 0.8))
+      if (abs(velocity.x) >= (properties->hVelMax * speedModifier))
       {
-        velocity.x = (properties->hVelMax * 0.8);
+        velocity.x = (properties->hVelMax * speedModifier);
       }
     }
     else
@@ -388,8 +389,11 @@ struct MeleeEnemy : public Character
     if (IsIntersecting(playerCollider))
     {
       p->health -= 1;
-      std::cout<<p->health<<std::endl;
-      remove;
+      //std::cout<<p->health<<std::endl;
+      p->kills += 1;
+      p->killsThreshold += 1;
+      std::cout << "KILLS: " << p->kills << std::endl;
+      kill();
     }
   }
 };

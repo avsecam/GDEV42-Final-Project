@@ -55,6 +55,8 @@ struct Entity {
   bool IsIntersecting(Rectangle rec) {
     return CheckCollisionRecs(rec, GetCollider());
   }
+
+
 };
 
 struct Obstacle : public Entity {
@@ -125,6 +127,17 @@ struct Character : public Entity {
   }
 
   void ApplyVerticalVelocity() { position.y += velocity.y; }
+
+  void kill(){
+    if(position.y < 400){
+      position.y = 600;
+      position.x = rand() % 700 + 100;
+    }
+    else{
+      position.y = 200;
+      position.x = rand() % 700 + 100;
+    }
+  }
 };
 
 struct Player : public Character {
@@ -132,6 +145,8 @@ struct Player : public Character {
   bool isGrounded = false;
   int jumpFrame = 0;
   int framesAfterFallingOff = 0;
+  int kills = 0;
+  int killsThreshold = 0;
 
   Player(
     Vector2 _position, Vector2 _halfSizes, int _health = MAX_PLAYER_HEALTH,

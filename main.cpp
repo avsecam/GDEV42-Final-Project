@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <list>
 
 #include "headers/bezier.hpp"
 #include "headers/level.hpp"
@@ -28,11 +29,19 @@ int main()
   level->GeneratePaths();
 
   Player *player = level->player;
+  
 
 	RangedEnemy *enemy = new RangedEnemy({300, 400}, {20, 20});
   MeleeEnemy *menemy = new MeleeEnemy({500, 200}, {20, 20});
-	enemy->health = 10;
-  menemy->health = 10;
+  MeleeEnemy *menemy2 = new MeleeEnemy({500, 400}, {20, 20});
+  MeleeEnemy *menemy3 = new MeleeEnemy({200, 500}, {20, 20});
+  MeleeEnemy *menemy4 = new MeleeEnemy({600, 420}, {20, 20});
+  MeleeEnemy *menemy5 = new MeleeEnemy({400, 120}, {20, 20});
+  MeleeEnemy *menemy6 = new MeleeEnemy({300, 120}, {20, 20});
+  MeleeEnemy *menemy7 = new MeleeEnemy({800, 280}, {20, 20});
+  MeleeEnemy *menemy8 = new MeleeEnemy({200, 1000}, {20, 20});
+  MeleeEnemy *menemy9 = new MeleeEnemy({800, 120}, {20, 20});
+
 
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(TARGET_FPS);
@@ -44,11 +53,8 @@ int main()
 
   Vector2 cameraPos = {player->position.x, player->position.y};
 
-  std::cout << "CamEdges " << properties->camUpperLeft.x << " "
-            << properties->camUpperLeft.y << " " << properties->camLowerRight.x
-            << " " << properties->camLowerRight.y << std::endl;
-  std::cout << "CamType " << properties->camType << std::endl;
-  std::cout << "CamDrift " << properties->camDrift << std::endl;
+  std::list<MeleeEnemy*> activeMeleeEnemies{menemy, menemy2, menemy3};
+  std::list<MeleeEnemy*> inactiveMeleeEnemies{menemy4, menemy5, menemy6, menemy7, menemy8, menemy9};
 
   float accumulator = 0.0f;
   float delta = 0.0f;
@@ -60,20 +66,32 @@ int main()
     float windowRight = cameraView.target.x + properties->camLowerRight.x;
     float windowTop = cameraView.target.y + properties->camUpperLeft.y;
     float windowBot = cameraView.target.y + properties->camLowerRight.y;
-    // Move horizontally
+
+    // Player Movement
     player->MoveHorizontal(properties);
-
-    // Check collision, assume from left or right
     player->CollideHorizontal(level->obstacles, properties->gap);
-
-    // Move vertically
     player->MoveVertical(properties);
-
-    // Check top collision if moving upwards, bottom if downwards
     player->CollideVertical(level->obstacles, properties->gap);
 
+
+    // Enemy Movement
 		enemy->Update(properties, level->obstacles);
-    menemy->Update(properties, level->obstacles, player);
+    for(auto const& i : activeMeleeEnemies){
+      i->Update(properties, level->obstacles, player);
+    }
+    
+    if(player->killsThreshold == 10){
+      if (inactiveMeleeEnemies.size() > 0){
+        activeMeleeEnemies.push_back(inactiveMeleeEnemies.front());
+        inactiveMeleeEnemies.pop_front();
+        std::cout << "ADDED 1 ENEMY" << std::endl;
+      } 
+      for(auto const& i : activeMeleeEnemies){
+        i->speedModifier += 0.025;
+      }
+      std::cout << "Added 0.025 speed" << std::endl;
+      player->killsThreshold = 0;
+    } 
 
     float cameraPushX = 0.0f;
     float cameraPushY = 0.0f;
@@ -132,7 +150,10 @@ int main()
 
     level->Draw();
 		enemy->Draw();
-    menemy->Draw();
+
+    for(auto const& i : activeMeleeEnemies){
+      i->Draw();
+    }
 
     // DrawRectangleLines(
     //     windowLeft, windowTop, windowRight - windowLeft, windowBot - windowTop,
