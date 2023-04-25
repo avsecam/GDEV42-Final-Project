@@ -73,7 +73,7 @@ int main()
     player->CollideVertical(level->obstacles, properties->gap);
 
 		enemy->Update(properties, level->obstacles);
-    menemy->Update(properties, level->obstacles);
+    menemy->Update(properties, level->obstacles, player);
 
     float cameraPushX = 0.0f;
     float cameraPushY = 0.0f;
@@ -137,7 +137,7 @@ int main()
     // DrawRectangleLines(
     //     windowLeft, windowTop, windowRight - windowLeft, windowBot - windowTop,
     //     RED);
-
+    delete menemy;
     EndDrawing();
   }
 

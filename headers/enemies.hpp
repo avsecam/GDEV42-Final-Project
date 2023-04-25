@@ -181,46 +181,57 @@ struct MeleeEnemy : public Character
   bool isMovingLeft = true;
   bool isMovingRight = false;
   bool isJumping = false;
-  int moveTimer = 100;
   int jumpFrame = 0;
   int JUMP_CHANCE = 95;
+  bool isFollowingPlayer = false;
   using Character::Character;
 
   void Update(
-      const Properties *properties, const std::vector<Obstacle *> obstacles)
+      const Properties *properties, const std::vector<Obstacle *> obstacles, Player *player)
   {
+    findPlayer(player);
     checkIfJump();
     MoveHorizontal(properties);
     CollideHorizontal(obstacles, properties->gap);
     MoveVertical(properties);
     CollideVertical(obstacles, properties->gap);
-    switchDirection();
+    CollidePlayer(player);
   }
-  
-  void checkIfJump(){
-    int rng_num;
-    if(isJumping == false){
-      rng_num = rand() % 100;
-      if(rng_num > JUMP_CHANCE){
-        isJumping = true;
-        std::cout << "GONNA JUMP" << std::endl;
-      } 
+
+  void findPlayer(Player *p)
+  {
+    if (p->position.y < position.y+10 && p->position.y > position.y-10)
+    {
+      isFollowingPlayer = true;
+      std::cout << "FOLLOWING" << std::endl;
+      if (p->position.x > position.x)
+      {
+        isMovingLeft = false;
+        isMovingRight = true;
+      }
+      else if (p->position.x < position.x)
+      {
+        isMovingLeft = true;
+        isMovingRight = false;
+      }
+    }
+    else{
+      isFollowingPlayer = false;
+      std::cout << "NOT FOLLOWING"<< std::endl;
     }
   }
 
-  void chooseInitialMove()
+  void checkIfJump()
   {
     int rng_num;
-    rng_num = rand() % 2;
-    if (rng_num == 0)
+    if (isJumping == false && !isFollowingPlayer)
     {
-      isMovingLeft = true;
-      isMovingRight = false;
-    }
-    else if (rng_num == 1)
-    {
-      isMovingLeft = false;
-      isMovingRight = true;
+      rng_num = rand() % 100;
+      if (rng_num > JUMP_CHANCE)
+      {
+        isJumping = true;
+        std::cout << "GONNA JUMP" << std::endl;
+      }
     }
   }
 
@@ -229,25 +240,6 @@ struct MeleeEnemy : public Character
     int rng_num;
     rng_num = rand() % 200;
     return rng_num + 100;
-  }
-
-  void switchDirection()
-  {
-    if (moveTimer <= 0)
-    {
-      if (isMovingLeft)
-      {
-        isMovingLeft = false;
-        isMovingRight = true;
-        moveTimer = randomizeMoveTimer();
-      }
-      else if (isMovingRight)
-      {
-        isMovingLeft = true;
-        isMovingRight = false;
-        moveTimer = randomizeMoveTimer();
-      }
-    }
   }
 
   void MoveHorizontal(const Properties *properties)
@@ -262,9 +254,9 @@ struct MeleeEnemy : public Character
       {
         velocity.x -= properties->hAccel;
       }
-      if (abs(velocity.x) >= properties->hVelMax)
+      if (abs(velocity.x) >= (properties->hVelMax * 0.8))
       {
-        velocity.x = -properties->hVelMax;
+        velocity.x = -(properties->hVelMax * 0.8);
       }
     }
     else if (isMovingRight)
@@ -277,9 +269,9 @@ struct MeleeEnemy : public Character
       {
         velocity.x += properties->hAccel;
       }
-      if (abs(velocity.x) >= properties->hVelMax)
+      if (abs(velocity.x) >= (properties->hVelMax * 0.8))
       {
-        velocity.x = properties->hVelMax;
+        velocity.x = (properties->hVelMax * 0.8);
       }
     }
     else
@@ -288,21 +280,26 @@ struct MeleeEnemy : public Character
     }
 
     position.x += velocity.x;
-    moveTimer -= 1;
-    std::cout << moveTimer << std::endl;
   }
 
   void MoveVertical(const Properties *properties)
   {
-    if (isJumping && jumpFrame==0){
+    if (isJumping && jumpFrame == 0)
+    {
       velocity.y += properties->vAccel;
       ++jumpFrame;
-    } else if (isJumping && velocity.y < 0){
-      if (jumpFrame < properties->vHold){
+    }
+    else if (isJumping && velocity.y < 0)
+    {
+      if (jumpFrame < properties->vHold)
+      {
         velocity.y += properties->vAccel * ((properties->vHold - jumpFrame) / properties->vHold);
         ++jumpFrame;
-      } else {
-        if (velocity.y < properties->vVelCut){
+      }
+      else
+      {
+        if (velocity.y < properties->vVelCut)
+        {
           velocity.y = properties->vVelCut;
         }
       }
@@ -383,6 +380,16 @@ struct MeleeEnemy : public Character
 
         break;
       }
+    }
+  }
+
+  void CollidePlayer(Player* p){
+    Rectangle playerCollider = p->GetCollider();
+    if (IsIntersecting(playerCollider))
+    {
+      p->health -= 1;
+      std::cout<<p->health<<std::endl;
+      //delete this;
     }
   }
 };
