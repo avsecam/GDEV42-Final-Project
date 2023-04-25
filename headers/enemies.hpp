@@ -178,9 +178,9 @@ private:
 
 struct MeleeEnemy : public Character
 {
-  bool isMovingLeft = false;
+  bool isMovingLeft = true;
   bool isMovingRight = false;
-
+  bool moveTimer = 100;
   using Character::Character;
 
   void Update(
@@ -190,6 +190,49 @@ struct MeleeEnemy : public Character
     CollideHorizontal(obstacles, properties->gap);
     MoveVertical(properties);
     CollideVertical(obstacles, properties->gap);
+  }
+
+  void chooseInitialMove()
+  {
+    int rng_num;
+    rng_num = rand() % 2;
+    if (rng_num == 0)
+    {
+      isMovingLeft = true;
+      isMovingRight = false;
+    }
+    else if (rng_num == 1)
+    {
+      isMovingLeft = false;
+      isMovingRight = true;
+    }
+  }
+
+  int randomizeMoveTimer()
+  {
+    int rng_num;
+    rng_num = rand() % 300;
+    moveTimer = rng_num + 200;
+    return moveTimer;
+  }
+
+  void switchDirection()
+  {
+    if (moveTimer = 0)
+    {
+      if (isMovingLeft)
+      {
+        isMovingLeft = false;
+        isMovingRight = true;
+        moveTimer = randomizeMoveTimer();
+      }
+      else if (isMovingRight)
+      {
+        isMovingLeft = true;
+        isMovingRight = false;
+        moveTimer = randomizeMoveTimer();
+      }
+    }
   }
 
   void MoveHorizontal(const Properties *properties)
@@ -230,6 +273,7 @@ struct MeleeEnemy : public Character
     }
 
     position.x += velocity.x;
+    moveTimer -= 1;
   }
 
   void MoveVertical(const Properties *properties)
@@ -261,11 +305,13 @@ struct MeleeEnemy : public Character
           position.x = velocity.x > 0 ? position.x - gap : position.x + gap;
         }
 
-        if(isMovingLeft){
+        if (isMovingLeft)
+        {
           isMovingRight = true;
           isMovingLeft = false;
         }
-        else{
+        else
+        {
           isMovingLeft = true;
           isMovingRight = false;
         }
@@ -274,7 +320,6 @@ struct MeleeEnemy : public Character
     }
   }
 
-  
   void CollideVertical(
       const std::vector<Obstacle *> obstacles, const float gap)
   {
