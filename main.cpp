@@ -29,7 +29,8 @@ int main()
   level->GeneratePaths();
 
   Player *player = level->player;
-  
+  PlayerWeapon *weapon = new PlayerWeapon(player->position, {40,60});
+  bool showWeaponHitbox = false;
 
 	RangedEnemy *enemy = new RangedEnemy({300, 400}, {20, 20});
   MeleeEnemy *menemy = new MeleeEnemy({500, 200}, {20, 20});
@@ -73,7 +74,19 @@ int main()
     player->MoveVertical(properties);
     player->CollideVertical(level->obstacles, properties->gap);
 
+    weapon->Update(player);
 
+    // Attacking
+    if (IsKeyPressed(KEY_J)){
+      for(auto const& i : activeMeleeEnemies){
+        if (weapon->IsIntersecting(i->GetCollider())){
+          i->kill();
+          player->kills += 1;
+          player->killsThreshold += 1;
+          std::cout << "KILLS: " << player->kills << std::endl;
+        }
+      }
+    }
     // Enemy Movement
 		enemy->Update(properties, level->obstacles);
     for(auto const& i : activeMeleeEnemies){
@@ -137,11 +150,18 @@ int main()
       // std::cout << "DRIFTING VERTICALLY" << std::endl;
     }
 
+    if(IsKeyPressed(KEY_Q)){
+      showWeaponHitbox = !showWeaponHitbox;
+    }
+
     accumulator += delta;
     while (accumulator >= TIMESTEP)
     {
       level->Update();
       accumulator -= TIMESTEP;
+
+     
+
     }
 
     BeginDrawing();
@@ -150,7 +170,10 @@ int main()
 
     level->Draw();
 		enemy->Draw();
-
+    if(showWeaponHitbox){
+      weapon->Draw();
+    }
+    
     for(auto const& i : activeMeleeEnemies){
       i->Draw();
     }

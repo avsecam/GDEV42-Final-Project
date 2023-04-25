@@ -389,10 +389,7 @@ struct MeleeEnemy : public Character
     if (IsIntersecting(playerCollider))
     {
       p->health -= 1;
-      //std::cout<<p->health<<std::endl;
-      p->kills += 1;
-      p->killsThreshold += 1;
-      std::cout << "KILLS: " << p->kills << std::endl;
+      std::cout << "Health: " << p->health << std::endl;
       kill();
     }
   }

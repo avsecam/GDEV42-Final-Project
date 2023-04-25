@@ -117,6 +117,17 @@ struct Character : public Entity {
     const std::vector<Obstacle*> obstacles, const float gap
   ) = 0;
 
+  void kill(){
+    if(position.y < 400){
+      position.y = 600;
+      position.x = rand() % 700 + 100;
+    }
+    else{
+      position.y = 200;
+      position.x = rand() % 700 + 100;
+    }
+  }
+
  protected:
   void HandleGravity(const Properties* properties) {
     velocity.y += properties->gravity;
@@ -128,16 +139,7 @@ struct Character : public Entity {
 
   void ApplyVerticalVelocity() { position.y += velocity.y; }
 
-  void kill(){
-    if(position.y < 400){
-      position.y = 600;
-      position.x = rand() % 700 + 100;
-    }
-    else{
-      position.y = 200;
-      position.x = rand() % 700 + 100;
-    }
-  }
+  
 };
 
 struct Player : public Character {
@@ -147,6 +149,7 @@ struct Player : public Character {
   int framesAfterFallingOff = 0;
   int kills = 0;
   int killsThreshold = 0;
+  std::string facingDirection = "right";
 
   Player(
     Vector2 _position, Vector2 _halfSizes, int _health = MAX_PLAYER_HEALTH,
@@ -165,6 +168,7 @@ struct Player : public Character {
     }
 
     if (IsKeyDown(KEY_A)) {
+      facingDirection = "left";
       if (velocity.x > 0.0f) {
         velocity.x -=
           properties->hAccel * properties->hOpposite * airControlFactor;
@@ -175,6 +179,7 @@ struct Player : public Character {
         velocity.x = -properties->hVelMax;
       }
     } else if (IsKeyDown(KEY_D)) {
+      facingDirection = "right";
       if (velocity.x < 0.0f) {
         velocity.x +=
           properties->hAccel * properties->hOpposite * airControlFactor;
@@ -286,6 +291,26 @@ struct Item : public Entity {
   ItemType type;
 
   using Entity::Entity;
+};
+
+struct PlayerWeapon : public Entity {
+  //if(IsIntersecting(MeleeEnemy menemy))
+  PlayerWeapon(Vector2 _position, Vector2 _halfSizes, Color _color = GREEN) {
+    this->position = _position;
+    this->halfSizes = _halfSizes;
+    this->color = _color;
+  }
+
+  void Update(Player *player){
+    if (player->facingDirection == "left"){
+      position.x = player->position.x - 50; 
+    }
+    else {
+      position.x = player->position.x + 50;
+    }
+    position.y = player->position.y;
+  }
+
 };
 
 #endif
