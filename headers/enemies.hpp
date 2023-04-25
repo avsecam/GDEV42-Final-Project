@@ -180,17 +180,32 @@ struct MeleeEnemy : public Character
 {
   bool isMovingLeft = true;
   bool isMovingRight = false;
+  bool isJumping = false;
   int moveTimer = 100;
+  int jumpFrame = 0;
+  int JUMP_CHANCE = 95;
   using Character::Character;
 
   void Update(
       const Properties *properties, const std::vector<Obstacle *> obstacles)
   {
+    checkIfJump();
     MoveHorizontal(properties);
     CollideHorizontal(obstacles, properties->gap);
     MoveVertical(properties);
     CollideVertical(obstacles, properties->gap);
     switchDirection();
+  }
+  
+  void checkIfJump(){
+    int rng_num;
+    if(isJumping == false){
+      rng_num = rand() % 100;
+      if(rng_num > JUMP_CHANCE){
+        isJumping = true;
+        std::cout << "GONNA JUMP" << std::endl;
+      } 
+    }
   }
 
   void chooseInitialMove()
@@ -279,6 +294,20 @@ struct MeleeEnemy : public Character
 
   void MoveVertical(const Properties *properties)
   {
+    if (isJumping && jumpFrame==0){
+      velocity.y += properties->vAccel;
+      ++jumpFrame;
+    } else if (isJumping && velocity.y < 0){
+      if (jumpFrame < properties->vHold){
+        velocity.y += properties->vAccel * ((properties->vHold - jumpFrame) / properties->vHold);
+        ++jumpFrame;
+      } else {
+        if (velocity.y < properties->vVelCut){
+          velocity.y = properties->vVelCut;
+        }
+      }
+    }
+
     HandleGravity(properties);
     LimitVerticalVelocity(properties);
     ApplyVerticalVelocity();
@@ -344,6 +373,8 @@ struct MeleeEnemy : public Character
         if (velocity.y >= 0)
         { // Grounded
           velocity.y = 0;
+          jumpFrame = 0;
+          isJumping = false;
         }
         else
         { // Na-untog

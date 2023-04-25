@@ -30,7 +30,7 @@ int main()
   Player *player = level->player;
 
 	RangedEnemy *enemy = new RangedEnemy({300, 400}, {20, 20});
-  MeleeEnemy *menemy = new MeleeEnemy({500, 200}, {20, 40});
+  MeleeEnemy *menemy = new MeleeEnemy({500, 200}, {20, 20});
 	enemy->health = 10;
   menemy->health = 10;
 
