@@ -55,8 +55,22 @@ struct Entity {
   bool IsIntersecting(Rectangle rec) {
     return CheckCollisionRecs(rec, GetCollider());
   }
+};
 
+struct Bullet : public Entity {
+  Vector2 direction;
+  float speed;
 
+  Bullet(
+    Vector2 _position, Vector2 _halfSizes, Vector2 _direction, float _speed,
+    Color _color = STATIC_OBSTACLE_COLOR
+  )
+      : Entity(_position, _halfSizes) {
+    this->direction = _direction;
+    this->speed = _speed;
+  }
+
+  void Update() { position = Vector2Add(position, Vector2Scale(direction, speed)); }
 };
 
 struct Obstacle : public Entity {
@@ -128,12 +142,11 @@ struct Character : public Entity {
 
   void ApplyVerticalVelocity() { position.y += velocity.y; }
 
-  void kill(){
-    if(position.y < 400){
+  void kill() {
+    if (position.y < 400) {
       position.y = 600;
       position.x = rand() % 700 + 100;
-    }
-    else{
+    } else {
       position.y = 200;
       position.x = rand() % 700 + 100;
     }
@@ -153,8 +166,8 @@ struct Player : public Character {
     Color _color = PLAYER_COLOR
   )
       : Character(_position, _halfSizes, _color) {
-				this->health = MAX_PLAYER_HEALTH;
-			}
+    this->health = MAX_PLAYER_HEALTH;
+  }
 
   void MoveHorizontal(const Properties* properties) {
     // Moving through air
