@@ -30,7 +30,9 @@ int main()
   Player *player = level->player;
 
 	RangedEnemy *enemy = new RangedEnemy({300, 400}, {20, 20});
+  MeleeEnemy *menemy = new MeleeEnemy({500, 200}, {20, 40});
 	enemy->health = 10;
+  menemy->health = 10;
 
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(TARGET_FPS);
@@ -71,6 +73,7 @@ int main()
     player->CollideVertical(level->obstacles, properties->gap);
 
 		enemy->Update(properties, level->obstacles);
+    menemy->Update(properties, level->obstacles);
 
     float cameraPushX = 0.0f;
     float cameraPushY = 0.0f;
@@ -129,6 +132,7 @@ int main()
 
     level->Draw();
 		enemy->Draw();
+    menemy->Draw();
 
     // DrawRectangleLines(
     //     windowLeft, windowTop, windowRight - windowLeft, windowBot - windowTop,
