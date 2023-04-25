@@ -17,6 +17,16 @@ struct RangedEnemy : public Character
     MoveVertical(properties);
     CollideVertical(obstacles, properties->gap);
   }
+	
+	Bullet* Shoot(Player *player) {
+		Vector2 directionToPlayer = Vector2Subtract(player->position, position);
+		Bullet* bullet = new Bullet(position, directionToPlayer);
+		return bullet;
+	}
+	
+	bool CollidePlayer(Player* player) {
+		return IsIntersecting(player->GetCollider());
+	}
 
 private:
   void MoveHorizontal(const Properties *properties)
@@ -155,11 +165,11 @@ private:
         { // Na-untog
           velocity.y = -velocity.y;
         }
-
         break;
       }
     }
   }
+
 
   Rectangle GetBottomLeftCollider()
   {
