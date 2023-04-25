@@ -180,7 +180,7 @@ struct MeleeEnemy : public Character
 {
   bool isMovingLeft = true;
   bool isMovingRight = false;
-  bool moveTimer = 100;
+  int moveTimer = 100;
   using Character::Character;
 
   void Update(
@@ -190,6 +190,7 @@ struct MeleeEnemy : public Character
     CollideHorizontal(obstacles, properties->gap);
     MoveVertical(properties);
     CollideVertical(obstacles, properties->gap);
+    switchDirection();
   }
 
   void chooseInitialMove()
@@ -211,14 +212,13 @@ struct MeleeEnemy : public Character
   int randomizeMoveTimer()
   {
     int rng_num;
-    rng_num = rand() % 300;
-    moveTimer = rng_num + 200;
-    return moveTimer;
+    rng_num = rand() % 200;
+    return rng_num + 100;
   }
 
   void switchDirection()
   {
-    if (moveTimer = 0)
+    if (moveTimer <= 0)
     {
       if (isMovingLeft)
       {
@@ -274,6 +274,7 @@ struct MeleeEnemy : public Character
 
     position.x += velocity.x;
     moveTimer -= 1;
+    std::cout << moveTimer << std::endl;
   }
 
   void MoveVertical(const Properties *properties)
