@@ -38,7 +38,6 @@ struct Level {
 		for (Bullet* b : bullets) {
 			b->Draw();
 		}
-    player->Draw();
   }
 
   void GeneratePaths() {
