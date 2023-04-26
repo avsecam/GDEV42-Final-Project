@@ -118,6 +118,16 @@ int main()
         }
       }
 
+      for (auto const &i : level->rangedEnemies){
+        if (weapon->IsIntersecting(i->GetCollider())){
+          i->kill();
+          PlaySoundMulti(bloodSplatter);
+          player->kills += 1;
+          player->killsThreshold += 1;
+          std::cout << "KILLS: " << player->kills << std::endl;
+        }
+      }
+
       canSwing = false;
       swingCooldownTimeLeft = SWING_COOLDOWN;
 
