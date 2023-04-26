@@ -297,14 +297,14 @@ struct MeleeEnemy : public Character
   {
     if (isJumping && jumpFrame == 0)
     {
-      velocity.y += properties->vAccel;
+      velocity.y = properties->vAccel;
       ++jumpFrame;
     }
     else if (isJumping && velocity.y < 0)
     {
       if (jumpFrame < properties->vHold)
       {
-        velocity.y += properties->vAccel * ((properties->vHold - jumpFrame) / properties->vHold);
+        velocity.y = properties->vAccel * ((properties->vHold - jumpFrame) / properties->vHold);
         ++jumpFrame;
       }
       else

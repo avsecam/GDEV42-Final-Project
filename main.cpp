@@ -174,9 +174,6 @@ int main() {
       }
 
       accumulator -= TIMESTEP;
-
-     
-
     }
 
     BeginDrawing();

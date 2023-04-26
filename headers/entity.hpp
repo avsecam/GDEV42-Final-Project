@@ -204,11 +204,11 @@ struct Player : public Character {
     // Jump handling
     if (IsKeyPressed(KEY_SPACE) && jumpFrame <= 0 && framesAfterFallingOff <= properties->vSafe)
     {
-      velocity.y += properties->vAccel;
+      velocity.y = properties->vAccel;
       ++jumpFrame;
     } else if (IsKeyDown(KEY_SPACE) && velocity.y < 0) {  // In jump
       if (jumpFrame < properties->vHold) {
-        velocity.y += properties->vAccel *
+        velocity.y = properties->vAccel *
                       ((properties->vHold - jumpFrame) / properties->vHold);
         ++jumpFrame;
       } else {
