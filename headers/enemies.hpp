@@ -7,7 +7,7 @@ struct RangedEnemy : public Character
 {
   Heading heading = Heading::LEFT;
 
-  using Character::Character;
+  RangedEnemy(Vector2 _position, Vector2 _halfSizes, Color _color = RANGED_ENEMY_COLOR) : Character(_position, _halfSizes, _color) {};
 
   void Update(
       const Properties *properties, const std::vector<Obstacle *> obstacles)
