@@ -76,6 +76,7 @@ int main()
 
   Texture swordIdleTexture = LoadTexture("./assets/swordIdle.png");
   Texture swordAttackTexture = LoadTexture("./assets/swordAttack.png");
+  Texture floor = LoadTexture("./assets/Floor.png");
 
   Music gameBgm = LoadMusicStream("./assets/Spook3.mp3");
   Sound swordSwing = LoadSound("./assets/swordSwing.wav");
@@ -277,6 +278,8 @@ int main()
     BeginMode2D(cameraView);
     ClearBackground(WHITE);
 
+    DrawTexture(floor, 0, 0, WHITE);
+
     level->Draw();
 
     for (RangedEnemy *r : level->rangedEnemies)
@@ -326,6 +329,7 @@ int main()
   }
 
   UnloadTexture(swordIdleTexture);
+  UnloadTexture(floor);
   UnloadTexture(swordAttackTexture);
   UnloadSound(swordSwing);
   UnloadSound(bloodSplatter);
