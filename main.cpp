@@ -26,6 +26,14 @@ const float START_TIME(30.0f); // in seconds
 const float ATTACK_ANIMATION_LENGTH(0.15f);
 const float SWING_COOLDOWN(.75f);
 
+float findRotationAngle(
+  Vector2 characterPos, Vector2 mousePos
+) {
+  float resultAngle;
+  resultAngle = atan2f(mousePos.y - characterPos.y, mousePos.x - characterPos.x);
+  return resultAngle;
+}
+
 int main()
 {
   Properties *properties = LoadProperties(PROPERTIES_FILENAME, TARGET_FPS);
@@ -76,6 +84,8 @@ int main()
 
   Texture swordIdleTexture = LoadTexture("./assets/swordIdle.png");
   Texture swordAttackTexture = LoadTexture("./assets/swordAttack.png");
+  Texture enemyMeleeTexture = LoadTexture("./assets/enemyMelee.png");
+  Texture enemyRangedTexture = LoadTexture("./assets/enemyRanged.png");
   Texture floor = LoadTexture("./assets/Floor.png");
 
   Music gameBgm = LoadMusicStream("./assets/Spook3.mp3");
@@ -284,7 +294,17 @@ int main()
 
     for (RangedEnemy *r : level->rangedEnemies)
     {
-      r->Draw();
+      Rectangle enemyRec;
+      Rectangle enemyWindowRec;
+      enemyRec.x = 108;
+      enemyRec.y = 128;
+      enemyRec.width = 280;
+      enemyRec.height = 267;
+      enemyWindowRec.x = r->position.x;
+      enemyWindowRec.y = r->position.y;
+      enemyWindowRec.width = 100.8/2;
+      enemyWindowRec.height = 96.48/2;
+      DrawTexturePro(enemyRangedTexture, enemyRec, enemyWindowRec, {50.4-25, 48.24-20}, findRotationAngle(level->player->position, r->position) * RAD2DEG, WHITE); 
     }
     if (inAttackAnimation)
     {
@@ -313,13 +333,25 @@ int main()
 
       DrawTextureRec(swordIdleTexture, swordRec, {weapon->position.x-70+turnDirectionModifier, weapon->position.y-70}, WHITE);
     }
+    
     if(showWeaponHitbox){
       weapon->Draw();
     }
 
     for (auto const &i : activeMeleeEnemies)
     {
-      i->Draw();
+      Rectangle enemyRec;
+      Rectangle enemyWindowRec; 
+             
+      enemyRec.x = 56;
+      enemyRec.y = 120;
+      enemyRec.width = 430;
+      enemyRec.height = 280;
+      enemyWindowRec.x = i->position.x;
+      enemyWindowRec.y = i->position.y;
+      enemyWindowRec.width = 72.25;
+      enemyWindowRec.height = 47.25;
+      DrawTexturePro(enemyMeleeTexture, enemyRec, enemyWindowRec, {30.375, 27.5}, findRotationAngle(level->player->position, i->position) * RAD2DEG, WHITE);
     }
     // DrawRectangleLines(
     //     windowLeft, windowTop, windowRight - windowLeft, windowBot -
@@ -331,6 +363,8 @@ int main()
   UnloadTexture(swordIdleTexture);
   UnloadTexture(floor);
   UnloadTexture(swordAttackTexture);
+  UnloadTexture(enemyMeleeTexture);
+  UnloadTexture(enemyRangedTexture);
   UnloadSound(swordSwing);
   UnloadSound(bloodSplatter);
   UnloadMusicStream(gameBgm);
@@ -348,3 +382,4 @@ int main()
 
   return 0;
 }
+
