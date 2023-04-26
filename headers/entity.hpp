@@ -10,7 +10,7 @@
 #include "properties.hpp"
 
 const float PLAYER_WIDTH(24);
-const float PLAYER_HEIGHT(32);
+const float PLAYER_HEIGHT(48);
 const Color PLAYER_COLOR(BLUE);
 const int MAX_PLAYER_HEALTH(10);
 

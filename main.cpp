@@ -72,6 +72,9 @@ int main()
   float delta = 0.0f;
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(TARGET_FPS);
+
+  Texture swordIdleTexture = LoadTexture("./assets/swordIdle.png");
+  Texture swordAttackTexture = LoadTexture("./assets/swordAttack.png");
   while (!WindowShouldClose())
   {
     delta = GetFrameTime();
@@ -258,6 +261,32 @@ int main()
     }
     if (inAttackAnimation)
     {
+      Rectangle swordRec;
+      float turnDirectionModifier = 0;
+      swordRec.x = 0; swordRec.y = 0; swordRec.height = 125;
+      if(player->facingDirection=="left"){
+        swordRec.width = 125;
+      } else{
+        swordRec.width = -125;
+        turnDirectionModifier = 10;
+      }
+
+      DrawTextureRec(swordAttackTexture, swordRec, {weapon->position.x-70+turnDirectionModifier, weapon->position.y-70}, WHITE);
+    }
+    else{
+      Rectangle swordRec;
+      float turnDirectionModifier = 0;
+      swordRec.x = 0; swordRec.y = 0; swordRec.height = 125;
+      if(player->facingDirection=="left"){
+        swordRec.width = 125;
+      } else{
+        swordRec.width = -125;
+        turnDirectionModifier = 10;
+      }
+
+      DrawTextureRec(swordIdleTexture, swordRec, {weapon->position.x-70+turnDirectionModifier, weapon->position.y-70}, WHITE);
+    }
+    if(showWeaponHitbox){
       weapon->Draw();
     }
 
@@ -272,6 +301,8 @@ int main()
     EndDrawing();
   }
 
+  UnloadTexture(swordIdleTexture);
+  UnloadTexture(swordAttackTexture);
   CloseWindow();
 
   // Delete pointers
