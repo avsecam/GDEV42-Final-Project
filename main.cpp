@@ -103,7 +103,6 @@ int main() {
   Texture floor = LoadTexture("./assets/Floor.png");
 
   Texture itemHealthTexture = LoadTexture("./assets/Heart_Full.png");
-  Texture itemTimeTexture = LoadTexture("./assets/Heart_Empty.png");
 
   Music gameBgm = LoadMusicStream("./assets/Spook3.mp3");
   Sound swordSwing = LoadSound("./assets/swordSwing.wav");
@@ -173,14 +172,11 @@ int main() {
         i->Update(properties, level->obstacles, player);
       }
 
-      if (player->killsThreshold == 2) {
+      if (player->killsThreshold == 10) {
         // Add an item
         if (level->items.empty()) {
           int itemSpawnIndex = rand() % level->itemSpawns.size();
-          ItemType itemType =
-            rand() % 3 > 1 ? ItemType::HEALTH : ItemType::TIME;
           Item *newItem = new Item(level->itemSpawns[itemSpawnIndex], {20, 20});
-          newItem->type = itemType;
           level->items.push_back(newItem);
         }
         // Add 2 ranged enemies
@@ -427,8 +423,7 @@ int main() {
 
       if (!level->items.empty()) {
         level->items[0]->Draw(
-          level->items[0]->type == ItemType::HEALTH ? itemHealthTexture
-                                                    : itemTimeTexture
+          itemHealthTexture
         );
       }
 
@@ -454,7 +449,6 @@ int main() {
   UnloadTexture(floor);
   UnloadTexture(swordAttackTexture);
   UnloadTexture(itemHealthTexture);
-  UnloadTexture(itemTimeTexture);
   UnloadTexture(enemyMeleeTexture);
   UnloadTexture(enemyRangedTexture);
   UnloadTexture(knightTexture);

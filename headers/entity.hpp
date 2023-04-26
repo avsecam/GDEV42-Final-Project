@@ -25,7 +25,6 @@ const Color STATIC_OBSTACLE_COLOR(GRAY);
 const Color MOVING_OBSTACLE_COLOR(DARKGRAY);
 
 enum ObstacleType { STATIC, MOVING };
-enum ItemType { TIME, HEALTH };
 enum Heading { LEFT, RIGHT };
 
 // All entity positions are assumed to be indicated by their centers, not
@@ -321,31 +320,23 @@ struct Bullet : public Entity {
 };
 
 struct Item : public Entity {
-  ItemType type;
   const float TIMER_ADD = 5.0f;
 
   using Entity::Entity;
 
   bool Update(Player* player, float timer) {
     if (IsIntersecting(player->GetCollider())) {
-      switch (type) {
-        case ItemType::HEALTH:
-          ++player->health;
-          break;
-        case ItemType::TIME:
-          timer += TIMER_ADD;
-          break;
-        default:
-          break;
-      }
-    	return true;
+      player->health += 5;
+      return true;
     }
     return false;
   }
 
   void Draw(Texture texture) {
     DrawCircleV(position, 15, GREEN);
-    DrawTextureV(texture, Vector2Subtract(position, Vector2Scale(halfSizes, 0.5)), WHITE);
+    DrawTextureV(
+      texture, Vector2Subtract(position, Vector2Scale(halfSizes, 0.5)), WHITE
+    );
   }
 };
 
