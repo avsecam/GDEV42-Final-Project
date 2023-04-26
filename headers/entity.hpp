@@ -104,7 +104,9 @@ struct Character : public Entity {
   Vector2 velocity;
   int health;
 
-  Character(Vector2 _position, Vector2 _halfSizes, Color _color = MELEE_ENEMY_COLOR) {
+  Character(
+    Vector2 _position, Vector2 _halfSizes, Color _color = MELEE_ENEMY_COLOR
+  ) {
     this->position = _position;
     this->halfSizes = _halfSizes;
     this->color = _color;
@@ -301,9 +303,7 @@ struct Bullet : public Entity {
     this->speed = _speed;
   }
 
-	void Draw() {
-		DrawCircleV(position, halfSizes.x, color);
-	}
+  void Draw() { DrawCircleV(position, halfSizes.x, color); }
 
   void Update(const float timestep) {
     position = Vector2Add(
@@ -322,8 +322,31 @@ struct Bullet : public Entity {
 
 struct Item : public Entity {
   ItemType type;
+  const float TIMER_ADD = 5.0f;
 
   using Entity::Entity;
+
+  bool Update(Player* player, float timer) {
+    if (IsIntersecting(player->GetCollider())) {
+      switch (type) {
+        case ItemType::HEALTH:
+          ++player->health;
+          break;
+        case ItemType::TIME:
+          timer += TIMER_ADD;
+          break;
+        default:
+          break;
+      }
+    	return true;
+    }
+    return false;
+  }
+
+  void Draw(Texture texture) {
+    DrawCircleV(position, 15, GREEN);
+    DrawTextureV(texture, Vector2Subtract(position, Vector2Scale(halfSizes, 0.5)), WHITE);
+  }
 };
 
 struct PlayerWeapon : public Entity {
@@ -335,7 +358,7 @@ struct PlayerWeapon : public Entity {
   }
 
   void Update(Player* player, std::vector<Bullet*> bullets) {
-		if (player->facingDirection == "left") {
+    if (player->facingDirection == "left") {
       position.x = player->position.x - 50;
     } else {
       position.x = player->position.x + 50;

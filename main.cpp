@@ -22,12 +22,11 @@ const char *WINDOW_TITLE("⚔ HAKENSLASH THE PLATFORMER ⚔");
 const int TARGET_FPS(60);
 const float TIMESTEP(1.0f / (float)TARGET_FPS);
 
-const float START_TIME(30.0f); // in seconds
+const float START_TIME(30.0f);  // in seconds
 const float ATTACK_ANIMATION_LENGTH(0.15f);
 const float SWING_COOLDOWN(.75f);
 
-int main()
-{
+int main() {
   Properties *properties = LoadProperties(PROPERTIES_FILENAME, TARGET_FPS);
   Level *level = Level::LoadLevel(LEVEL_FILENAME);
   level->GeneratePaths();
@@ -78,6 +77,9 @@ int main()
   Texture swordAttackTexture = LoadTexture("./assets/swordAttack.png");
   Texture floor = LoadTexture("./assets/Floor.png");
 
+  Texture itemHealthTexture = LoadTexture("./assets/Heart_Full.png");
+  Texture itemTimeTexture = LoadTexture("./assets/Heart_Empty.png");
+
   Music gameBgm = LoadMusicStream("./assets/Spook3.mp3");
   Sound swordSwing = LoadSound("./assets/swordSwing.wav");
   Sound bloodSplatter = LoadSound("./assets/bloodSplatter.wav");
@@ -85,8 +87,7 @@ int main()
   PlayMusicStream(gameBgm);
   SetMusicVolume(gameBgm, 0.15);
 
-  while (!WindowShouldClose())
-  {
+  while (!WindowShouldClose()) {
     delta = GetFrameTime();
 
     float windowLeft = cameraView.target.x + properties->camUpperLeft.x;
@@ -103,26 +104,23 @@ int main()
     weapon->Update(player, level->bullets);
 
     // Attacking
-    if (IsKeyPressed(KEY_J) && canSwing)
-    {
+    if (IsKeyPressed(KEY_J) && canSwing) {
       PlaySound(swordSwing);
       inAttackAnimation = true;
-      for (auto const &i : activeMeleeEnemies)
-      {
-        if (weapon->IsIntersecting(i->GetCollider()))
-        {
+      for (auto const &i : activeMeleeEnemies) {
+        if (weapon->IsIntersecting(i->GetCollider())) {
           i->kill();
-          PlaySoundMulti(bloodSplatter);
+          PlaySound(bloodSplatter);
           player->kills += 1;
           player->killsThreshold += 1;
           std::cout << "KILLS: " << player->kills << std::endl;
         }
       }
 
-      for (auto const &i : level->rangedEnemies){
-        if (weapon->IsIntersecting(i->GetCollider())){
+      for (auto const &i : level->rangedEnemies) {
+        if (weapon->IsIntersecting(i->GetCollider())) {
           i->kill();
-          PlaySoundMulti(bloodSplatter);
+          PlaySound(bloodSplatter);
           player->kills += 1;
           player->killsThreshold += 1;
           std::cout << "KILLS: " << player->kills << std::endl;
@@ -139,25 +137,30 @@ int main()
       }
     }
     // Enemy Movement
-    for (auto const &i : activeMeleeEnemies)
-    {
+    for (auto const &i : activeMeleeEnemies) {
       i->Update(properties, level->obstacles, player);
     }
 
-    if (player->killsThreshold == 10)
-    {
+    if (player->killsThreshold == 2) {
+      // Add an item
+      if (level->items.empty()) {
+        int itemSpawnIndex = rand() % level->itemSpawns.size();
+        ItemType itemType = rand() % 3 > 1 ? ItemType::HEALTH : ItemType::TIME;
+        Item* newItem =
+          new Item(level->itemSpawns[itemSpawnIndex], {20, 20});
+        newItem->type = itemType;
+				level->items.push_back(newItem);
+      }
       // Add 2 ranged enemies
       level->rangedEnemies.push_back(new RangedEnemy({300, 400}, {20, 20}));
       level->rangedEnemies.push_back(new RangedEnemy({900, 400}, {20, 20}));
 
-      if (inactiveMeleeEnemies.size() > 0)
-      {
+      if (inactiveMeleeEnemies.size() > 0) {
         activeMeleeEnemies.push_back(inactiveMeleeEnemies.front());
         inactiveMeleeEnemies.pop_front();
         std::cout << "ADDED 1 ENEMY" << std::endl;
       }
-      for (auto const &i : activeMeleeEnemies)
-      {
+      for (auto const &i : activeMeleeEnemies) {
         i->speedModifier += 0.025;
       }
       std::cout << "Added 0.025 speed" << std::endl;
@@ -167,26 +170,23 @@ int main()
     float cameraPushX = 0.0f;
     float cameraPushY = 0.0f;
     float driftX = Clamp(
-        player->position.x - (windowLeft + windowRight) / 2,
-        -properties->camDrift, properties->camDrift);
+      player->position.x - (windowLeft + windowRight) / 2,
+      -properties->camDrift, properties->camDrift
+    );
     float driftY = Clamp(
-        player->position.y - (windowTop + windowBot) / 2, -properties->camDrift,
-        properties->camDrift);
+      player->position.y - (windowTop + windowBot) / 2, -properties->camDrift,
+      properties->camDrift
+    );
 
-    if ((player->position.x + player->halfSizes.x) > windowRight)
-    {
+    if ((player->position.x + player->halfSizes.x) > windowRight) {
       cameraPushX = (player->position.x + player->halfSizes.x) - windowRight;
       // std::cout << "CAM PUSHING RIGHT" << std::endl;
       cameraView.target.x += cameraPushX;
-    }
-    else if ((player->position.x - player->halfSizes.x) < windowLeft)
-    {
+    } else if ((player->position.x - player->halfSizes.x) < windowLeft) {
       cameraPushX = (player->position.x - player->halfSizes.x) - windowLeft;
       // std::cout << "CAM PUSHING LEFT" << std::endl;
       cameraView.target.x += cameraPushX;
-    }
-    else
-    {
+    } else {
       cameraView.target.x += driftX;
       // std::cout << "DRIFTING HORIZONTALLY" << std::endl;
     }
@@ -195,30 +195,25 @@ int main()
       cameraPushY = (player->position.y + player->halfSizes.y) - windowBot;
       // std::cout << "CAM PUSHING BOT" << std::endl;
       cameraView.target.y += cameraPushY;
-    }
-    else if ((player->position.y - player->halfSizes.y) < windowTop)
-    {
+    } else if ((player->position.y - player->halfSizes.y) < windowTop) {
       cameraPushY = (player->position.y - player->halfSizes.y) - windowTop;
       // std::cout << "CAM PUSHING TOP" << std::endl;
       cameraView.target.y += cameraPushY;
-    }
-    else
-    {
+    } else {
       cameraView.target.y += driftY;
       // std::cout << "DRIFTING VERTICALLY" << std::endl;
     }
 
-		// Clamp camera
-		cameraView.target.x = Clamp(cameraView.target.x, 450, 750);
-		cameraView.target.y = Clamp(cameraView.target.y, 300, 750);
+    // Clamp camera
+    cameraView.target.x = Clamp(cameraView.target.x, 450, 750);
+    cameraView.target.y = Clamp(cameraView.target.y, 300, 750);
 
     if (IsKeyPressed(KEY_Q)) {
       showWeaponHitbox = !showWeaponHitbox;
     }
 
     accumulator += delta;
-    while (accumulator >= TIMESTEP)
-    {
+    while (accumulator >= TIMESTEP) {
       // TIMER
       timeLeft -= accumulator;
       timeElapsed += accumulator;
@@ -226,8 +221,7 @@ int main()
       level->Update({0, 0, 1200, 1200}, TIMESTEP);
       for (size_t i = 0; i < level->bullets.size(); ++i) {
         Bullet *b = level->bullets[i];
-        if (b->CollidePlayer(player))
-        {
+        if (b->CollidePlayer(player)) {
           player->health -= 1;
           level->bullets.erase(level->bullets.begin() + i);
           delete b;
@@ -238,16 +232,13 @@ int main()
         }
       }
 
-      for (size_t i = 0; i < level->rangedEnemies.size(); ++i)
-      {
+      for (size_t i = 0; i < level->rangedEnemies.size(); ++i) {
         RangedEnemy *r = level->rangedEnemies[i];
-        if (rand() % 100 > 98)
-        {
+        if (rand() % 100 > 98) {
           level->bullets.push_back(r->Shoot(player));
         }
         r->Update(properties, level->obstacles);
-        if (r->CollidePlayer(player))
-        {
+        if (r->CollidePlayer(player)) {
           player->health -= 1;
           level->rangedEnemies.erase(level->rangedEnemies.begin() + i);
           delete r;
@@ -256,17 +247,22 @@ int main()
 
       if (swingCooldownTimeLeft <= 0.0f && !canSwing) {
         canSwing = true;
-      }
-      else {
+      } else {
         swingCooldownTimeLeft -= TIMESTEP;
       }
-      
+
       if (inAttackAnimation) {
         attackAnimTimeLeft -= TIMESTEP;
-        if (attackAnimTimeLeft <= 0){
+        if (attackAnimTimeLeft <= 0) {
           inAttackAnimation = false;
           attackAnimTimeLeft = ATTACK_ANIMATION_LENGTH;
         }
+      }
+
+      if (!level->items.empty() && level->items[0]->Update(player, timeLeft))
+      {
+        delete level->items[0];
+        level->items.clear();
       }
 
       accumulator -= TIMESTEP;
@@ -282,45 +278,60 @@ int main()
 
     level->Draw();
 
-    for (RangedEnemy *r : level->rangedEnemies)
-    {
+    for (RangedEnemy *r : level->rangedEnemies) {
       r->Draw();
     }
-    if (inAttackAnimation)
-    {
+    if (inAttackAnimation) {
       Rectangle swordRec;
       float turnDirectionModifier = 0;
-      swordRec.x = 0; swordRec.y = 0; swordRec.height = 125;
-      if(player->facingDirection=="left"){
+      swordRec.x = 0;
+      swordRec.y = 0;
+      swordRec.height = 125;
+      if (player->facingDirection == "left") {
         swordRec.width = 125;
-      } else{
+      } else {
         swordRec.width = -125;
         turnDirectionModifier = 10;
       }
 
-      DrawTextureRec(swordAttackTexture, swordRec, {weapon->position.x-70+turnDirectionModifier, weapon->position.y-70}, WHITE);
-    }
-    else{
+      DrawTextureRec(
+        swordAttackTexture, swordRec,
+        {weapon->position.x - 70 + turnDirectionModifier,
+         weapon->position.y - 70},
+        WHITE
+      );
+    } else {
       Rectangle swordRec;
       float turnDirectionModifier = 0;
-      swordRec.x = 0; swordRec.y = 0; swordRec.height = 125;
-      if(player->facingDirection=="left"){
+      swordRec.x = 0;
+      swordRec.y = 0;
+      swordRec.height = 125;
+      if (player->facingDirection == "left") {
         swordRec.width = 125;
-      } else{
+      } else {
         swordRec.width = -125;
         turnDirectionModifier = 10;
       }
 
-      DrawTextureRec(swordIdleTexture, swordRec, {weapon->position.x-70+turnDirectionModifier, weapon->position.y-70}, WHITE);
+      DrawTextureRec(
+        swordIdleTexture, swordRec,
+        {weapon->position.x - 70 + turnDirectionModifier,
+         weapon->position.y - 70},
+        WHITE
+      );
     }
-    if(showWeaponHitbox){
+    if (showWeaponHitbox) {
       weapon->Draw();
     }
 
-    for (auto const &i : activeMeleeEnemies)
-    {
+    for (auto const &i : activeMeleeEnemies) {
       i->Draw();
     }
+
+    if (!level->items.empty()) {
+      level->items[0]->Draw(level->items[0]->type == ItemType::HEALTH ? itemHealthTexture : itemTimeTexture);
+    }
+
     // DrawRectangleLines(
     //     windowLeft, windowTop, windowRight - windowLeft, windowBot -
     //     windowTop, RED);
@@ -331,6 +342,8 @@ int main()
   UnloadTexture(swordIdleTexture);
   UnloadTexture(floor);
   UnloadTexture(swordAttackTexture);
+	UnloadTexture(itemHealthTexture);
+	UnloadTexture(itemTimeTexture);
   UnloadSound(swordSwing);
   UnloadSound(bloodSplatter);
   UnloadMusicStream(gameBgm);
@@ -340,8 +353,7 @@ int main()
 
   // Delete pointers
   delete player;
-  for (Obstacle *o : level->obstacles)
-  {
+  for (Obstacle *o : level->obstacles) {
     delete o;
   }
   delete level;

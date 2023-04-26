@@ -15,6 +15,7 @@ struct Level {
 	std::vector<Bullet*> bullets;
 
   std::vector<Vector2> itemSpawns;
+  std::vector<Item*> items;
 
   void Update(Rectangle limits, const float timestep) {
     for (Obstacle* o : obstacles) {
@@ -40,7 +41,6 @@ struct Level {
 		for (Bullet* b : bullets) {
 			b->Draw();
 		}
-
     player->Draw();
   }
 
