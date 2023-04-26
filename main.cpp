@@ -102,6 +102,7 @@ int main()
   Texture swordAttackTexture = LoadTexture("./assets/swordAttack.png");
   Texture enemyMeleeTexture = LoadTexture("./assets/enemyMelee.png");
   Texture enemyRangedTexture = LoadTexture("./assets/enemyRanged.png");
+  Texture knightTexture = LoadTexture("./assets/knight.png");
   Texture floor = LoadTexture("./assets/Floor.png");
 
   Music gameBgm = LoadMusicStream("./assets/Spook3.mp3");
@@ -326,6 +327,8 @@ int main()
     }
 
     menuHandler.Update();
+    
+    UpdateMusicStream(gameBgm);
 
     BeginDrawing();
     BeginMode2D(cameraView);
@@ -350,6 +353,14 @@ int main()
         enemyWindowRec.height = 96.48/2;
         DrawTexturePro(enemyRangedTexture, enemyRec, enemyWindowRec, {50.4-25, 48.24-20}, findRotationAngle(level->player->position, r->position) * RAD2DEG, WHITE); 
       }
+      Rectangle knightRec;
+      knightRec.x = 0; knightRec.y = 0; knightRec.height=48;
+      if(level->player->facingDirection=="left"){
+        knightRec.width = -24;
+      } else {
+        knightRec.width = 24;
+      }
+      DrawTextureRec(knightTexture, knightRec, {level->player->position.x-12,level->player->position.y-25}, WHITE);
       if (inAttackAnimation)
       {
         Rectangle swordRec;
@@ -381,10 +392,10 @@ int main()
       if(showWeaponHitbox){
         weapon->Draw();
       }
-
+      
         for (auto const &i : activeMeleeEnemies)
         {
-          Rectangle enemyRec;
+        Rectangle enemyRec;
         Rectangle enemyWindowRec; 
               
         enemyRec.x = 56;
@@ -419,6 +430,7 @@ int main()
   UnloadTexture(swordAttackTexture);
   UnloadTexture(enemyMeleeTexture);
   UnloadTexture(enemyRangedTexture);
+  UnloadTexture(knightTexture);
   UnloadSound(swordSwing);
   UnloadSound(bloodSplatter);
   UnloadMusicStream(gameBgm);

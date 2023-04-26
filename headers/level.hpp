@@ -38,7 +38,6 @@ struct Level {
 			b->Draw();
 		}
 
-    player->Draw();
   }
 
   void GeneratePaths() {
