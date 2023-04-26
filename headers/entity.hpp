@@ -300,6 +300,10 @@ struct Bullet : public Entity {
     this->speed = _speed;
   }
 
+	void Draw() {
+		DrawCircleV(position, halfSizes.x, color);
+	}
+
   void Update(const float timestep) {
     position = Vector2Add(
       position, Vector2Scale(Vector2Normalize(direction), speed * timestep)
