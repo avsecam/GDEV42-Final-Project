@@ -274,12 +274,13 @@ struct HPBar : public UIComponent {
     }
 
     void UpdateHealth(int value) {
-        if (currentHealth + value > maxHealth) {
+        std::cout << value << std::endl;
+        if (value > maxHealth) {
             currentHealth = maxHealth;
-        } else if (currentHealth + value <= 0) {
+        } else if (value <= 0) {
             currentHealth = 0;
         } else {
-            currentHealth += value;
+            currentHealth = value;
         }
     }
     

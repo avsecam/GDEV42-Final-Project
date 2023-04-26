@@ -332,7 +332,7 @@ struct GameOverScreen : Menu {
     }
 
     void loadBackgroundTexture(Texture tex) override {
-        //gameOverBackground.backgroundImageTexture = tex;
+        gameOverBackground.backgroundImageTexture = tex;
     }
 
     void unloadBackgroundTexture() override {}
@@ -403,8 +403,6 @@ struct HPAndScoreGUI : Menu {
 
         void Update() override { 
             uiLibrary.Update(); 
-
-            hpBar.UpdateHealth(health);
             scoreOutput.text = std::to_string(newScore);
         }
 };
