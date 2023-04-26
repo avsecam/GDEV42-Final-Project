@@ -31,9 +31,6 @@ struct Level {
     for (Obstacle* o : obstacles) {
       o->Draw();
     }
-		for (RangedEnemy* r : rangedEnemies) {
-			r->Draw();
-		}
 		for (Vector2 itemSpawn : itemSpawns) {
 			DrawCircleV(itemSpawn, 10, RED);
 		}

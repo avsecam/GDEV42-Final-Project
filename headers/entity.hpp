@@ -10,15 +10,15 @@
 #include "properties.hpp"
 
 const float PLAYER_WIDTH(24);
-const float PLAYER_HEIGHT(32);
+const float PLAYER_HEIGHT(48);
 const Color PLAYER_COLOR(BLUE);
 const int MAX_PLAYER_HEALTH(10);
 
 const Color MELEE_ENEMY_COLOR(RED);
 const Color RANGED_ENEMY_COLOR(ORANGE);
 
-const float BULLET_HALF_SIZE(10);
-const float BULLET_SPEED(100.0f);
+const float BULLET_HALF_SIZE(5);
+const float BULLET_SPEED(300.0f);
 const Color BULLET_COLOR(MAGENTA);
 
 const Color STATIC_OBSTACLE_COLOR(GRAY);

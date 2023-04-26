@@ -24,7 +24,15 @@ const float TIMESTEP(1.0f / (float)TARGET_FPS);
 
 const float START_TIME(30.0f); // in seconds
 const float ATTACK_ANIMATION_LENGTH(0.15f);
-const float SWING_COOLDOWN(0.5f);
+const float SWING_COOLDOWN(.75f);
+
+float findRotationAngle(
+  Vector2 characterPos, Vector2 mousePos
+) {
+  float resultAngle;
+  resultAngle = atan2f(mousePos.y - characterPos.y, mousePos.x - characterPos.x);
+  return resultAngle;
+}
 
 int main()
 {
@@ -76,6 +84,7 @@ int main()
 
   float accumulator = 0.0f;
   float delta = 0.0f;
+  InitAudioDevice();
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(TARGET_FPS);
 
@@ -87,6 +96,20 @@ int main()
   menuHandler.inGameGUI.hpBar.heart_full = heartFull;
   menuHandler.inGameGUI.hpBar.heart_half = heartHalf;
   menuHandler.inGameGUI.hpBar.heart_empty = heartEmpty;
+
+
+  Texture swordIdleTexture = LoadTexture("./assets/swordIdle.png");
+  Texture swordAttackTexture = LoadTexture("./assets/swordAttack.png");
+  Texture enemyMeleeTexture = LoadTexture("./assets/enemyMelee.png");
+  Texture enemyRangedTexture = LoadTexture("./assets/enemyRanged.png");
+  Texture floor = LoadTexture("./assets/Floor.png");
+
+  Music gameBgm = LoadMusicStream("./assets/Spook3.mp3");
+  Sound swordSwing = LoadSound("./assets/swordSwing.wav");
+  Sound bloodSplatter = LoadSound("./assets/bloodSplatter.wav");
+
+  PlayMusicStream(gameBgm);
+  SetMusicVolume(gameBgm, 0.15);
 
   while (!WindowShouldClose()) {
     delta = GetFrameTime();
@@ -114,12 +137,24 @@ int main()
       // Attacking
       if (IsKeyPressed(KEY_J) && canSwing)
       {
+        PlaySound(swordSwing);
         inAttackAnimation = true;
         for (auto const &i : activeMeleeEnemies)
         {
           if (weapon->IsIntersecting(i->GetCollider()))
           {
             i->kill();
+            PlaySoundMulti(bloodSplatter);
+            player->kills += 1;
+            player->killsThreshold += 1;
+            std::cout << "KILLS: " << player->kills << std::endl;
+          }
+        }
+
+        for (auto const &i : level->rangedEnemies){
+          if (weapon->IsIntersecting(i->GetCollider())){
+            i->kill();
+            PlaySoundMulti(bloodSplatter);
             player->kills += 1;
             player->killsThreshold += 1;
             std::cout << "KILLS: " << player->kills << std::endl;
@@ -127,6 +162,7 @@ int main()
         }
 
         canSwing = false;
+        swingCooldownTimeLeft = SWING_COOLDOWN;
 
         for (Bullet *b : level->bullets) {
           if (b->IsIntersecting(weapon->GetCollider())) {
@@ -250,7 +286,7 @@ int main()
           }
         }
 
-        if (swingCooldownTimeLeft <= 0.0f) {
+        if (swingCooldownTimeLeft <= 0.0f && !canSwing) {
           canSwing = true;
         }
         else {
@@ -265,7 +301,7 @@ int main()
           }
         }
 
-        menuHandler.inGameGUI.hpBar.UpdateHealth(player->health);
+      menuHandler.inGameGUI.hpBar.UpdateHealth(player->health);
         newScore = player->kills * 10;
 
         if(player->health <= 0){
@@ -295,26 +331,77 @@ int main()
     BeginMode2D(cameraView);
     ClearBackground(WHITE);
 
-    if (state == InGame) {
+    DrawTexture(floor, 0, 0, WHITE);
+
+    if(state == InGame){
       level->Draw();
 
       for (RangedEnemy *r : level->rangedEnemies)
       {
-        r->Draw();
+        Rectangle enemyRec;
+        Rectangle enemyWindowRec;
+        enemyRec.x = 108;
+        enemyRec.y = 128;
+        enemyRec.width = 280;
+        enemyRec.height = 267;
+        enemyWindowRec.x = r->position.x;
+        enemyWindowRec.y = r->position.y;
+        enemyWindowRec.width = 100.8/2;
+        enemyWindowRec.height = 96.48/2;
+        DrawTexturePro(enemyRangedTexture, enemyRec, enemyWindowRec, {50.4-25, 48.24-20}, findRotationAngle(level->player->position, r->position) * RAD2DEG, WHITE); 
       }
       if (inAttackAnimation)
       {
+        Rectangle swordRec;
+        float turnDirectionModifier = 0;
+        swordRec.x = 0; swordRec.y = 0; swordRec.height = 125;
+        if(player->facingDirection=="left"){
+          swordRec.width = 125;
+        } else{
+          swordRec.width = -125;
+          turnDirectionModifier = 10;
+        }
+
+        DrawTextureRec(swordAttackTexture, swordRec, {weapon->position.x-70+turnDirectionModifier, weapon->position.y-70}, WHITE);
+      }
+      else{
+        Rectangle swordRec;
+        float turnDirectionModifier = 0;
+        swordRec.x = 0; swordRec.y = 0; swordRec.height = 125;
+        if(player->facingDirection=="left"){
+          swordRec.width = 125;
+        } else{
+          swordRec.width = -125;
+          turnDirectionModifier = 10;
+        }
+
+        DrawTextureRec(swordIdleTexture, swordRec, {weapon->position.x-70+turnDirectionModifier, weapon->position.y-70}, WHITE);
+      }
+      
+      if(showWeaponHitbox){
         weapon->Draw();
       }
 
-      for (auto const &i : activeMeleeEnemies)
-      {
-        i->Draw();
-      }
-      // DrawRectangleLines(
-      //     windowLeft, windowTop, windowRight - windowLeft, windowBot -
-      //     windowTop, RED);
+        for (auto const &i : activeMeleeEnemies)
+        {
+          Rectangle enemyRec;
+        Rectangle enemyWindowRec; 
+              
+        enemyRec.x = 56;
+        enemyRec.y = 120;
+        enemyRec.width = 430;
+        enemyRec.height = 280;
+        enemyWindowRec.x = i->position.x;
+        enemyWindowRec.y = i->position.y;
+        enemyWindowRec.width = 72.25;
+        enemyWindowRec.height = 47.25;
+        DrawTexturePro(enemyMeleeTexture, enemyRec, enemyWindowRec, {30.375, 27.5}, findRotationAngle(level->player->position, i->position) * RAD2DEG, WHITE);
+        }
+        // DrawRectangleLines(
+        //     windowLeft, windowTop, windowRight - windowLeft, windowBot -
+        //     windowTop, RED);
     }
+  
 
     EndMode2D();
     menuHandler.menuList[InGameOverScreen]->loadBackgroundTexture(gameOverBackground);
@@ -327,6 +414,16 @@ int main()
   UnloadTexture(heartHalf);
   UnloadTexture(heartEmpty);
   menuHandler.menuList[InGameOverScreen]->unloadBackgroundTexture();
+  UnloadTexture(swordIdleTexture);
+  UnloadTexture(floor);
+  UnloadTexture(swordAttackTexture);
+  UnloadTexture(enemyMeleeTexture);
+  UnloadTexture(enemyRangedTexture);
+  UnloadSound(swordSwing);
+  UnloadSound(bloodSplatter);
+  UnloadMusicStream(gameBgm);
+
+  CloseAudioDevice();
   CloseWindow();
 
   // Delete pointers
@@ -339,3 +436,4 @@ int main()
 
   return 0;
 }
+
