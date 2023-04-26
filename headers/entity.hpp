@@ -333,8 +333,8 @@ struct PlayerWeapon : public Entity {
     this->color = _color;
   }
 
-  void Update(Player* player) {
-    if (player->facingDirection == "left") {
+  void Update(Player* player, std::vector<Bullet*> bullets) {
+		if (player->facingDirection == "left") {
       position.x = player->position.x - 50;
     } else {
       position.x = player->position.x + 50;

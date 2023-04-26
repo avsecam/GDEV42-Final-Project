@@ -22,7 +22,7 @@ const char *WINDOW_TITLE("HAKENSLASH THE PLATFORMER");
 const int TARGET_FPS(60);
 const float TIMESTEP(1.0f / (float)TARGET_FPS);
 
-const float START_TIME(30.0f); // in seconds
+const float START_TIME(30.0f);  // in seconds
 
 int main() {
   Properties *properties = LoadProperties(PROPERTIES_FILENAME, TARGET_FPS);
@@ -59,9 +59,9 @@ int main() {
                                                menemy7, menemy8, menemy9};
 
   float timeLeft = START_TIME;
-	float timeElapsed = 0.0f;
-	
-	float accumulator = 0.0f;
+  float timeElapsed = 0.0f;
+
+  float accumulator = 0.0f;
   float delta = 0.0f;
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(TARGET_FPS);
@@ -79,7 +79,7 @@ int main() {
     player->MoveVertical(properties);
     player->CollideVertical(level->obstacles, properties->gap);
 
-    weapon->Update(player);
+    weapon->Update(player, level->bullets);
 
     // Attacking
     if (IsKeyPressed(KEY_J)) {
@@ -89,6 +89,12 @@ int main() {
           player->kills += 1;
           player->killsThreshold += 1;
           std::cout << "KILLS: " << player->kills << std::endl;
+        }
+      }
+
+      for (Bullet *b : level->bullets) {
+        if (b->IsIntersecting(weapon->GetCollider())) {
+          b->direction = {-b->direction.x, -b->direction.y};
         }
       }
     }
@@ -156,9 +162,9 @@ int main() {
 
     accumulator += delta;
     while (accumulator >= TIMESTEP) {
-			// TIMER
-			timeLeft -= accumulator;
-			timeElapsed += accumulator;
+      // TIMER
+      timeLeft -= accumulator;
+      timeElapsed += accumulator;
 
       level->Update({-1500, -1500, 3000, 3000}, TIMESTEP);
       for (size_t i = 0; i < level->bullets.size(); ++i) {
