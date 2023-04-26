@@ -5,9 +5,6 @@
 #include <iostream>
 #include <vector>
 
-#include "headers/bezier.hpp"
-#include "headers/level.hpp"
-#include "headers/properties.hpp"
 #include "headers/uihandler.hpp"
 
 const float WINDOW_WIDTH(1280);
@@ -29,7 +26,7 @@ int main() {
     Texture heartHalf = LoadTexture("./assets/Heart_Half.png");
     Texture heartEmpty = LoadTexture("./assets/Heart_Empty.png");
 
-    menuHandler.inGameGUI.hpBar.InitBar(10);
+    menuHandler.inGameGUI.hpBar.InitBar(20);
 
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_W)) {

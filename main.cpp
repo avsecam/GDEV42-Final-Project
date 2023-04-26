@@ -28,6 +28,10 @@ const float SWING_COOLDOWN(0.5f);
 
 int main()
 {
+  UIState state;
+  MenuHandler menuHandler;
+  menuHandler.initialize(WINDOW_WIDTH, WINDOW_HEIGHT);
+
   Properties *properties = LoadProperties(PROPERTIES_FILENAME, TARGET_FPS);
   Level *level = Level::LoadLevel(LEVEL_FILENAME);
   level->GeneratePaths();
@@ -39,6 +43,8 @@ int main()
   bool inAttackAnimation = false;
   bool canSwing = false;
   bool showWeaponHitbox = false;
+
+  menuHandler.inGameGUI.hpBar.InitBar(player->health);
 
   RangedEnemy *enemy = new RangedEnemy({300, 400}, {20, 20});
   MeleeEnemy *menemy = new MeleeEnemy({500, 200}, {20, 20});
@@ -72,206 +78,255 @@ int main()
   float delta = 0.0f;
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(TARGET_FPS);
-  while (!WindowShouldClose())
-  {
+
+  Texture heartFull = LoadTexture("./assets/Heart_Full.png");
+  Texture heartHalf = LoadTexture("./assets/Heart_Half.png");
+  Texture heartEmpty = LoadTexture("./assets/Heart_Empty.png");
+  Texture gameOverBackground = LoadTexture("./assets/GameOver.png");
+
+  menuHandler.inGameGUI.hpBar.heart_full = heartFull;
+  menuHandler.inGameGUI.hpBar.heart_half = heartHalf;
+  menuHandler.inGameGUI.hpBar.heart_empty = heartEmpty;
+
+  while (!WindowShouldClose()) {
     delta = GetFrameTime();
+    
+    state = menuHandler.getState();
 
-    float windowLeft = cameraView.target.x + properties->camUpperLeft.x;
-    float windowRight = cameraView.target.x + properties->camLowerRight.x;
-    float windowTop = cameraView.target.y + properties->camUpperLeft.y;
-    float windowBot = cameraView.target.y + properties->camLowerRight.y;
+    if (state == InGame) {
+      float windowLeft = cameraView.target.x + properties->camUpperLeft.x;
+      float windowRight = cameraView.target.x + properties->camLowerRight.x;
+      float windowTop = cameraView.target.y + properties->camUpperLeft.y;
+      float windowBot = cameraView.target.y + properties->camLowerRight.y;
 
-    // Player Movement
-    player->MoveHorizontal(properties);
-    player->CollideHorizontal(level->obstacles, properties->gap);
-    player->MoveVertical(properties);
-    player->CollideVertical(level->obstacles, properties->gap);
+      // Player Movement
+      player->MoveHorizontal(properties);
+      player->CollideHorizontal(level->obstacles, properties->gap);
+      player->MoveVertical(properties);
+      player->CollideVertical(level->obstacles, properties->gap);
 
-    weapon->Update(player, level->bullets);
+      weapon->Update(player, level->bullets);
 
-    // Attacking
-    if (IsKeyPressed(KEY_J) && canSwing)
-    {
-      inAttackAnimation = true;
+      if (IsKeyPressed(KEY_TAB)) {
+        menuHandler.setState(InPauseScreen);
+      }
+
+      // Attacking
+      if (IsKeyPressed(KEY_J) && canSwing)
+      {
+        inAttackAnimation = true;
+        for (auto const &i : activeMeleeEnemies)
+        {
+          if (weapon->IsIntersecting(i->GetCollider()))
+          {
+            i->kill();
+            player->kills += 1;
+            player->killsThreshold += 1;
+            std::cout << "KILLS: " << player->kills << std::endl;
+          }
+        }
+
+        canSwing = false;
+
+        for (Bullet *b : level->bullets) {
+          if (b->IsIntersecting(weapon->GetCollider())) {
+            b->direction = {-b->direction.x, -b->direction.y};
+          }
+        }
+      }
+      // Enemy Movement
       for (auto const &i : activeMeleeEnemies)
       {
-        if (weapon->IsIntersecting(i->GetCollider()))
-        {
-          i->kill();
-          player->kills += 1;
-          player->killsThreshold += 1;
-          std::cout << "KILLS: " << player->kills << std::endl;
-        }
+        i->Update(properties, level->obstacles, player);
       }
 
-      canSwing = false;
-
-      for (Bullet *b : level->bullets) {
-        if (b->IsIntersecting(weapon->GetCollider())) {
-          b->direction = {-b->direction.x, -b->direction.y};
-        }
-      }
-    }
-    // Enemy Movement
-    for (auto const &i : activeMeleeEnemies)
-    {
-      i->Update(properties, level->obstacles, player);
-    }
-
-    if (player->killsThreshold == 10)
-    {
-      // Add 2 ranged enemies
-      level->rangedEnemies.push_back(new RangedEnemy({300, 400}, {20, 20}));
-      level->rangedEnemies.push_back(new RangedEnemy({900, 400}, {20, 20}));
-
-      if (inactiveMeleeEnemies.size() > 0)
+      if (player->killsThreshold == 10)
       {
-        activeMeleeEnemies.push_back(inactiveMeleeEnemies.front());
-        inactiveMeleeEnemies.pop_front();
-        std::cout << "ADDED 1 ENEMY" << std::endl;
+        // Add 2 ranged enemies
+        level->rangedEnemies.push_back(new RangedEnemy({300, 400}, {20, 20}));
+        level->rangedEnemies.push_back(new RangedEnemy({900, 400}, {20, 20}));
+
+        if (inactiveMeleeEnemies.size() > 0)
+        {
+          activeMeleeEnemies.push_back(inactiveMeleeEnemies.front());
+          inactiveMeleeEnemies.pop_front();
+          std::cout << "ADDED 1 ENEMY" << std::endl;
+        }
+        for (auto const &i : activeMeleeEnemies)
+        {
+          i->speedModifier += 0.025;
+        }
+        std::cout << "Added 0.025 speed" << std::endl;
+        player->killsThreshold = 0;
       }
-      for (auto const &i : activeMeleeEnemies)
+
+      float cameraPushX = 0.0f;
+      float cameraPushY = 0.0f;
+      float driftX = Clamp(
+          player->position.x - (windowLeft + windowRight) / 2,
+          -properties->camDrift, properties->camDrift);
+      float driftY = Clamp(
+          player->position.y - (windowTop + windowBot) / 2, -properties->camDrift,
+          properties->camDrift);
+
+      if ((player->position.x + player->halfSizes.x) > windowRight)
       {
-        i->speedModifier += 0.025;
+        cameraPushX = (player->position.x + player->halfSizes.x) - windowRight;
+        // std::cout << "CAM PUSHING RIGHT" << std::endl;
+        cameraView.target.x += cameraPushX;
       }
-      std::cout << "Added 0.025 speed" << std::endl;
-      player->killsThreshold = 0;
-    }
-
-    float cameraPushX = 0.0f;
-    float cameraPushY = 0.0f;
-    float driftX = Clamp(
-        player->position.x - (windowLeft + windowRight) / 2,
-        -properties->camDrift, properties->camDrift);
-    float driftY = Clamp(
-        player->position.y - (windowTop + windowBot) / 2, -properties->camDrift,
-        properties->camDrift);
-
-    if ((player->position.x + player->halfSizes.x) > windowRight)
-    {
-      cameraPushX = (player->position.x + player->halfSizes.x) - windowRight;
-      // std::cout << "CAM PUSHING RIGHT" << std::endl;
-      cameraView.target.x += cameraPushX;
-    }
-    else if ((player->position.x - player->halfSizes.x) < windowLeft)
-    {
-      cameraPushX = (player->position.x - player->halfSizes.x) - windowLeft;
-      // std::cout << "CAM PUSHING LEFT" << std::endl;
-      cameraView.target.x += cameraPushX;
-    }
-    else
-    {
-      cameraView.target.x += driftX;
-      // std::cout << "DRIFTING HORIZONTALLY" << std::endl;
-    }
-
-    if ((player->position.y + player->halfSizes.y) > windowBot) {
-      cameraPushY = (player->position.y + player->halfSizes.y) - windowBot;
-      // std::cout << "CAM PUSHING BOT" << std::endl;
-      cameraView.target.y += cameraPushY;
-    }
-    else if ((player->position.y - player->halfSizes.y) < windowTop)
-    {
-      cameraPushY = (player->position.y - player->halfSizes.y) - windowTop;
-      // std::cout << "CAM PUSHING TOP" << std::endl;
-      cameraView.target.y += cameraPushY;
-    }
-    else
-    {
-      cameraView.target.y += driftY;
-      // std::cout << "DRIFTING VERTICALLY" << std::endl;
-    }
-
-		// Clamp camera
-		cameraView.target.x = Clamp(cameraView.target.x, 450, 750);
-		cameraView.target.y = Clamp(cameraView.target.y, 300, 750);
-
-    if (IsKeyPressed(KEY_Q)) {
-      showWeaponHitbox = !showWeaponHitbox;
-    }
-
-    accumulator += delta;
-    while (accumulator >= TIMESTEP)
-    {
-      // TIMER
-      timeLeft -= accumulator;
-      timeElapsed += accumulator;
-
-      level->Update({0, 0, 1200, 1200}, TIMESTEP);
-      for (size_t i = 0; i < level->bullets.size(); ++i) {
-        Bullet *b = level->bullets[i];
-        if (b->CollidePlayer(player))
-        {
-          player->health -= 1;
-          level->bullets.erase(level->bullets.begin() + i);
-          delete b;
-        }
-        if (b->IsOutsideLimits({0, 0, 1200, 1200})) {
-          level->bullets.erase(level->bullets.begin() + i);
-          delete b;
-        }
-      }
-
-      for (size_t i = 0; i < level->rangedEnemies.size(); ++i)
+      else if ((player->position.x - player->halfSizes.x) < windowLeft)
       {
-        RangedEnemy *r = level->rangedEnemies[i];
-        if (rand() % 100 > 98)
-        {
-          level->bullets.push_back(r->Shoot(player));
-        }
-        r->Update(properties, level->obstacles);
-        if (r->CollidePlayer(player))
-        {
-          player->health -= 1;
-          level->rangedEnemies.erase(level->rangedEnemies.begin() + i);
-          delete r;
-        }
+        cameraPushX = (player->position.x - player->halfSizes.x) - windowLeft;
+        // std::cout << "CAM PUSHING LEFT" << std::endl;
+        cameraView.target.x += cameraPushX;
+      }
+      else
+      {
+        cameraView.target.x += driftX;
+        // std::cout << "DRIFTING HORIZONTALLY" << std::endl;
       }
 
-      if (swingCooldownTimeLeft <= 0.0f) {
-        canSwing = true;
+      if ((player->position.y + player->halfSizes.y) > windowBot) {
+        cameraPushY = (player->position.y + player->halfSizes.y) - windowBot;
+        // std::cout << "CAM PUSHING BOT" << std::endl;
+        cameraView.target.y += cameraPushY;
       }
-      else {
-        swingCooldownTimeLeft -= TIMESTEP;
+      else if ((player->position.y - player->halfSizes.y) < windowTop)
+      {
+        cameraPushY = (player->position.y - player->halfSizes.y) - windowTop;
+        // std::cout << "CAM PUSHING TOP" << std::endl;
+        cameraView.target.y += cameraPushY;
       }
-      
-      if (inAttackAnimation) {
-        attackAnimTimeLeft -= TIMESTEP;
-        if (attackAnimTimeLeft <= 0){
-          inAttackAnimation = false;
-          attackAnimTimeLeft = ATTACK_ANIMATION_LENGTH;
-        }
+      else
+      {
+        cameraView.target.y += driftY;
+        // std::cout << "DRIFTING VERTICALLY" << std::endl;
       }
 
-      accumulator -= TIMESTEP;
+      // Clamp camera
+      cameraView.target.x = Clamp(cameraView.target.x, 450, 750);
+      cameraView.target.y = Clamp(cameraView.target.y, 300, 750);
+
+      if (IsKeyPressed(KEY_Q)) {
+        showWeaponHitbox = !showWeaponHitbox;
+      }
+
+      accumulator += delta;
+      while (accumulator >= TIMESTEP)
+      {
+        // TIMER
+        timeLeft -= accumulator;
+        timeElapsed += accumulator;
+
+        level->Update({0, 0, 1200, 1200}, TIMESTEP);
+        for (size_t i = 0; i < level->bullets.size(); ++i) {
+          Bullet *b = level->bullets[i];
+          if (b->CollidePlayer(player))
+          {
+            player->health -= 1;
+            level->bullets.erase(level->bullets.begin() + i);
+            delete b;
+          }
+          if (b->IsOutsideLimits({0, 0, 1200, 1200})) {
+            level->bullets.erase(level->bullets.begin() + i);
+            delete b;
+          }
+        }
+
+        for (size_t i = 0; i < level->rangedEnemies.size(); ++i)
+        {
+          RangedEnemy *r = level->rangedEnemies[i];
+          if (rand() % 100 > 98)
+          {
+            level->bullets.push_back(r->Shoot(player));
+          }
+          r->Update(properties, level->obstacles);
+          if (r->CollidePlayer(player))
+          {
+            player->health -= 1;
+            level->rangedEnemies.erase(level->rangedEnemies.begin() + i);
+            delete r;
+          }
+        }
+
+        if (swingCooldownTimeLeft <= 0.0f) {
+          canSwing = true;
+        }
+        else {
+          swingCooldownTimeLeft -= TIMESTEP;
+        }
+        
+        if (inAttackAnimation) {
+          attackAnimTimeLeft -= TIMESTEP;
+          if (attackAnimTimeLeft <= 0){
+            inAttackAnimation = false;
+            attackAnimTimeLeft = ATTACK_ANIMATION_LENGTH;
+          }
+        }
+
+        menuHandler.inGameGUI.hpBar.UpdateHealth(player->health);
+        newScore = player->kills * 10;
+
+        if(player->health <= 0){
+          menuHandler.gameOverScreen.scoreLabel.text = "SCORE: " + std::to_string(newScore);
+          menuHandler.gameOverScreen.playerName.letterCount = 0;
+          menuHandler.setState(InGameOverScreen);
+        }
+        accumulator -= TIMESTEP;
+      }
     }
+    else {
+      if(state == InMainMenu) {
+        //----------------------------------
+        // Write Code that resets the game
+        //----------------------------------
+      }
+      else if (state == InPauseScreen) {
+        if (IsKeyPressed(KEY_TAB)) {
+          menuHandler.setState(InGame);
+        }
+      }
+    }
+
+    menuHandler.Update();
 
     BeginDrawing();
     BeginMode2D(cameraView);
     ClearBackground(WHITE);
 
-    level->Draw();
+    if (state == InGame) {
+      level->Draw();
 
-    for (RangedEnemy *r : level->rangedEnemies)
-    {
-      r->Draw();
-    }
-    if (inAttackAnimation)
-    {
-      weapon->Draw();
+      for (RangedEnemy *r : level->rangedEnemies)
+      {
+        r->Draw();
+      }
+      if (inAttackAnimation)
+      {
+        weapon->Draw();
+      }
+
+      for (auto const &i : activeMeleeEnemies)
+      {
+        i->Draw();
+      }
+      // DrawRectangleLines(
+      //     windowLeft, windowTop, windowRight - windowLeft, windowBot -
+      //     windowTop, RED);
     }
 
-    for (auto const &i : activeMeleeEnemies)
-    {
-      i->Draw();
-    }
-    // DrawRectangleLines(
-    //     windowLeft, windowTop, windowRight - windowLeft, windowBot -
-    //     windowTop, RED);
+    EndMode2D();
+    menuHandler.menuList[InGameOverScreen]->loadBackgroundTexture(gameOverBackground);
+    menuHandler.Draw();
 
     EndDrawing();
   }
 
+  UnloadTexture(heartFull);
+  UnloadTexture(heartHalf);
+  UnloadTexture(heartEmpty);
+  menuHandler.menuList[InGameOverScreen]->unloadBackgroundTexture();
   CloseWindow();
 
   // Delete pointers
