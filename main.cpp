@@ -22,6 +22,8 @@ const char *WINDOW_TITLE("HAKENSLASH THE PLATFORMER");
 const int TARGET_FPS(60);
 const float TIMESTEP(1.0f / (float)TARGET_FPS);
 
+const float START_TIME(30.0f); // in seconds
+
 int main() {
   Properties *properties = LoadProperties(PROPERTIES_FILENAME, TARGET_FPS);
   Level *level = Level::LoadLevel(LEVEL_FILENAME);
@@ -45,9 +47,6 @@ int main() {
   level->rangedEnemies.push_back(new RangedEnemy({300, 400}, {20, 20}));
   level->rangedEnemies.push_back(new RangedEnemy({900, 400}, {20, 20}));
 
-  InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
-  SetTargetFPS(TARGET_FPS);
-
   Camera2D cameraView = {0};
   cameraView.target = {player->position.x, player->position.y};
   cameraView.offset = {WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2};
@@ -59,8 +58,13 @@ int main() {
   std::list<MeleeEnemy *> inactiveMeleeEnemies{menemy4, menemy5, menemy6,
                                                menemy7, menemy8, menemy9};
 
-  float accumulator = 0.0f;
+  float timeLeft = START_TIME;
+	float timeElapsed = 0.0f;
+	
+	float accumulator = 0.0f;
   float delta = 0.0f;
+  InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
+  SetTargetFPS(TARGET_FPS);
   while (!WindowShouldClose()) {
     delta = GetFrameTime();
 
@@ -152,6 +156,10 @@ int main() {
 
     accumulator += delta;
     while (accumulator >= TIMESTEP) {
+			// TIMER
+			timeLeft -= accumulator;
+			timeElapsed += accumulator;
+
       level->Update({-1500, -1500, 3000, 3000}, TIMESTEP);
       for (size_t i = 0; i < level->bullets.size(); ++i) {
         Bullet *b = level->bullets[i];
@@ -198,7 +206,6 @@ int main() {
     for (auto const &i : activeMeleeEnemies) {
       i->Draw();
     }
-
     // DrawRectangleLines(
     //     windowLeft, windowTop, windowRight - windowLeft, windowBot -
     //     windowTop, RED);
