@@ -26,9 +26,6 @@ const float START_TIME(30.0f);  // in seconds
 const float ATTACK_ANIMATION_LENGTH(0.15f);
 const float SWING_COOLDOWN(.75f);
 
-<<<<<<< HEAD
-int main() {
-=======
 float findRotationAngle(
   Vector2 characterPos, Vector2 mousePos
 ) {
@@ -39,7 +36,6 @@ float findRotationAngle(
 
 int main()
 {
->>>>>>> 562b2c6acb9bd337a39d5b18c01b907a86601065
   Properties *properties = LoadProperties(PROPERTIES_FILENAME, TARGET_FPS);
   Level *level = Level::LoadLevel(LEVEL_FILENAME);
   level->GeneratePaths();
@@ -156,7 +152,7 @@ int main()
       i->Update(properties, level->obstacles, player);
     }
 
-    if (player->killsThreshold == 2) {
+    if (player->killsThreshold == 10) {
       // Add an item
       if (level->items.empty()) {
         int itemSpawnIndex = rand() % level->itemSpawns.size();
@@ -293,10 +289,6 @@ int main()
 
     level->Draw();
 
-<<<<<<< HEAD
-    for (RangedEnemy *r : level->rangedEnemies) {
-      r->Draw();
-=======
     for (RangedEnemy *r : level->rangedEnemies)
     {
       Rectangle enemyRec;
@@ -310,7 +302,6 @@ int main()
       enemyWindowRec.width = 100.8/2;
       enemyWindowRec.height = 96.48/2;
       DrawTexturePro(enemyRangedTexture, enemyRec, enemyWindowRec, {50.4-25, 48.24-20}, findRotationAngle(level->player->position, r->position) * RAD2DEG, WHITE); 
->>>>>>> 562b2c6acb9bd337a39d5b18c01b907a86601065
     }
     if (inAttackAnimation) {
       Rectangle swordRec;
@@ -351,14 +342,6 @@ int main()
         WHITE
       );
     }
-<<<<<<< HEAD
-    if (showWeaponHitbox) {
-      weapon->Draw();
-    }
-
-    for (auto const &i : activeMeleeEnemies) {
-      i->Draw();
-=======
     
     if(showWeaponHitbox){
       weapon->Draw();
@@ -378,7 +361,6 @@ int main()
       enemyWindowRec.width = 72.25;
       enemyWindowRec.height = 47.25;
       DrawTexturePro(enemyMeleeTexture, enemyRec, enemyWindowRec, {30.375, 27.5}, findRotationAngle(level->player->position, i->position) * RAD2DEG, WHITE);
->>>>>>> 562b2c6acb9bd337a39d5b18c01b907a86601065
     }
 
     if (!level->items.empty()) {
@@ -395,13 +377,10 @@ int main()
   UnloadTexture(swordIdleTexture);
   UnloadTexture(floor);
   UnloadTexture(swordAttackTexture);
-<<<<<<< HEAD
 	UnloadTexture(itemHealthTexture);
 	UnloadTexture(itemTimeTexture);
-=======
   UnloadTexture(enemyMeleeTexture);
   UnloadTexture(enemyRangedTexture);
->>>>>>> 562b2c6acb9bd337a39d5b18c01b907a86601065
   UnloadSound(swordSwing);
   UnloadSound(bloodSplatter);
   UnloadMusicStream(gameBgm);
