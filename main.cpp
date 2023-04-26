@@ -70,11 +70,20 @@ int main()
 
   float accumulator = 0.0f;
   float delta = 0.0f;
+  InitAudioDevice();
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(TARGET_FPS);
 
   Texture swordIdleTexture = LoadTexture("./assets/swordIdle.png");
   Texture swordAttackTexture = LoadTexture("./assets/swordAttack.png");
+
+  Music gameBgm = LoadMusicStream("./assets/Spook3.mp3");
+  Sound swordSwing = LoadSound("./assets/swordSwing.wav");
+  Sound bloodSplatter = LoadSound("./assets/bloodSplatter.wav");
+
+  PlayMusicStream(gameBgm);
+  SetMusicVolume(gameBgm, 0.15);
+
   while (!WindowShouldClose())
   {
     delta = GetFrameTime();
@@ -95,12 +104,14 @@ int main()
     // Attacking
     if (IsKeyPressed(KEY_J) && canSwing)
     {
+      PlaySound(swordSwing);
       inAttackAnimation = true;
       for (auto const &i : activeMeleeEnemies)
       {
         if (weapon->IsIntersecting(i->GetCollider()))
         {
           i->kill();
+          PlaySoundMulti(bloodSplatter);
           player->kills += 1;
           player->killsThreshold += 1;
           std::cout << "KILLS: " << player->kills << std::endl;
@@ -249,6 +260,8 @@ int main()
       accumulator -= TIMESTEP;
     }
 
+    UpdateMusicStream(gameBgm);
+
     BeginDrawing();
     BeginMode2D(cameraView);
     ClearBackground(WHITE);
@@ -303,6 +316,11 @@ int main()
 
   UnloadTexture(swordIdleTexture);
   UnloadTexture(swordAttackTexture);
+  UnloadSound(swordSwing);
+  UnloadSound(bloodSplatter);
+  UnloadMusicStream(gameBgm);
+
+  CloseAudioDevice();
   CloseWindow();
 
   // Delete pointers
