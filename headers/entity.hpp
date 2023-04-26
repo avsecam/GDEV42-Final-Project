@@ -14,7 +14,8 @@ const float PLAYER_HEIGHT(32);
 const Color PLAYER_COLOR(BLUE);
 const int MAX_PLAYER_HEALTH(10);
 
-const Color ENEMY_COLOR(RED);
+const Color MELEE_ENEMY_COLOR(RED);
+const Color RANGED_ENEMY_COLOR(ORANGE);
 
 const float BULLET_HALF_SIZE(10);
 const float BULLET_SPEED(100.0f);
@@ -103,7 +104,7 @@ struct Character : public Entity {
   Vector2 velocity;
   int health;
 
-  Character(Vector2 _position, Vector2 _halfSizes, Color _color = ENEMY_COLOR) {
+  Character(Vector2 _position, Vector2 _halfSizes, Color _color = MELEE_ENEMY_COLOR) {
     this->position = _position;
     this->halfSizes = _halfSizes;
     this->color = _color;
@@ -300,6 +301,10 @@ struct Bullet : public Entity {
     this->speed = _speed;
   }
 
+	void Draw() {
+		DrawCircleV(position, halfSizes.x, color);
+	}
+
   void Update(const float timestep) {
     position = Vector2Add(
       position, Vector2Scale(Vector2Normalize(direction), speed * timestep)
@@ -329,8 +334,8 @@ struct PlayerWeapon : public Entity {
     this->color = _color;
   }
 
-  void Update(Player* player) {
-    if (player->facingDirection == "left") {
+  void Update(Player* player, std::vector<Bullet*> bullets) {
+		if (player->facingDirection == "left") {
       position.x = player->position.x - 50;
     } else {
       position.x = player->position.x + 50;

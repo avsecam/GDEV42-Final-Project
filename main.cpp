@@ -87,7 +87,7 @@ int main()
     player->MoveVertical(properties);
     player->CollideVertical(level->obstacles, properties->gap);
 
-    weapon->Update(player);
+    weapon->Update(player, level->bullets);
 
     // Attacking
     if (IsKeyPressed(KEY_J) && canSwing)
@@ -105,6 +105,12 @@ int main()
       }
 
       canSwing = false;
+
+      for (Bullet *b : level->bullets) {
+        if (b->IsIntersecting(weapon->GetCollider())) {
+          b->direction = {-b->direction.x, -b->direction.y};
+        }
+      }
     }
     // Enemy Movement
     for (auto const &i : activeMeleeEnemies)
