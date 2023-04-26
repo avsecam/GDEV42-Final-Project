@@ -28,10 +28,10 @@ int main() {
   level->GeneratePaths();
 
   Player *player = level->player;
-  PlayerWeapon *weapon = new PlayerWeapon(player->position, {40,60});
+  PlayerWeapon *weapon = new PlayerWeapon(player->position, {40, 60});
   bool showWeaponHitbox = false;
 
-	RangedEnemy *enemy = new RangedEnemy({300, 400}, {20, 20});
+  RangedEnemy *enemy = new RangedEnemy({300, 400}, {20, 20});
   MeleeEnemy *menemy = new MeleeEnemy({500, 200}, {20, 20});
   MeleeEnemy *menemy2 = new MeleeEnemy({500, 400}, {20, 20});
   MeleeEnemy *menemy3 = new MeleeEnemy({200, 500}, {20, 20});
@@ -78,9 +78,9 @@ int main() {
     weapon->Update(player);
 
     // Attacking
-    if (IsKeyPressed(KEY_J)){
-      for(auto const& i : activeMeleeEnemies){
-        if (weapon->IsIntersecting(i->GetCollider())){
+    if (IsKeyPressed(KEY_J)) {
+      for (auto const &i : activeMeleeEnemies) {
+        if (weapon->IsIntersecting(i->GetCollider())) {
           i->kill();
           player->kills += 1;
           player->killsThreshold += 1;
@@ -146,31 +146,37 @@ int main() {
       // std::cout << "DRIFTING VERTICALLY" << std::endl;
     }
 
-    if(IsKeyPressed(KEY_Q)){
+    if (IsKeyPressed(KEY_Q)) {
       showWeaponHitbox = !showWeaponHitbox;
     }
 
     accumulator += delta;
     while (accumulator >= TIMESTEP) {
       level->Update({-1500, -1500, 3000, 3000}, TIMESTEP);
-			for (size_t i = 0; i < level->bullets.size(); ++i) {
-				Bullet *b = level->bullets[i];
-				if (b->ShouldDelete(level->player, {-1500, -1500, 3000, 3000})) {
-					level->bullets.erase(level->bullets.begin() + i);
-					delete b;
-				}
+      for (size_t i = 0; i < level->bullets.size(); ++i) {
+        Bullet *b = level->bullets[i];
+        if (b->CollidePlayer(player)) {
+          player->health -= 1;
+          level->bullets.erase(level->bullets.begin() + i);
+          delete b;
+        }
+        if (b->IsOutsideLimits({-1500, -1500, 3000, 3000})) {
+          level->bullets.erase(level->bullets.begin() + i);
+          delete b;
+        }
       }
 
       for (size_t i = 0; i < level->rangedEnemies.size(); ++i) {
-				RangedEnemy *r = level->rangedEnemies[i];
+        RangedEnemy *r = level->rangedEnemies[i];
         if (rand() % 100 > 98) {
-          level->bullets.push_back(r->Shoot(level->player));
+          level->bullets.push_back(r->Shoot(player));
         }
         r->Update(properties, level->obstacles);
-				if (r->CollidePlayer(level->player)) {
-					level->rangedEnemies.erase(level->rangedEnemies.begin() + i);
-					delete r;
-				}
+        if (r->CollidePlayer(player)) {
+          player->health -= 1;
+          level->rangedEnemies.erase(level->rangedEnemies.begin() + i);
+          delete r;
+        }
       }
 
       accumulator -= TIMESTEP;
@@ -185,10 +191,10 @@ int main() {
     for (RangedEnemy *r : level->rangedEnemies) {
       r->Draw();
     }
-    if(showWeaponHitbox){
+    if (showWeaponHitbox) {
       weapon->Draw();
     }
-    
+
     for (auto const &i : activeMeleeEnemies) {
       i->Draw();
     }

@@ -119,12 +119,11 @@ struct Character : public Entity {
     const std::vector<Obstacle*> obstacles, const float gap
   ) = 0;
 
-  void kill(){
-    if(position.y < 400){
+  void kill() {
+    if (position.y < 400) {
       position.y = 600;
       position.x = rand() % 700 + 100;
-    }
-    else{
+    } else {
       position.y = 200;
       position.x = rand() % 700 + 100;
     }
@@ -209,7 +208,7 @@ struct Player : public Character {
     } else if (IsKeyDown(KEY_SPACE) && velocity.y < 0) {  // In jump
       if (jumpFrame < properties->vHold) {
         velocity.y = properties->vAccel *
-                      ((properties->vHold - jumpFrame) / properties->vHold);
+                     ((properties->vHold - jumpFrame) / properties->vHold);
         ++jumpFrame;
       } else {
         if (velocity.y < properties->vVelCut) {
@@ -292,8 +291,7 @@ struct Bullet : public Entity {
   float speed;
 
   Bullet(
-    Vector2 _position, Vector2 _direction,
-		float _speed = BULLET_SPEED,
+    Vector2 _position, Vector2 _direction, float _speed = BULLET_SPEED,
     Vector2 _halfSizes = {BULLET_HALF_SIZE, BULLET_HALF_SIZE},
     Color _color = BULLET_COLOR
   )
@@ -303,12 +301,18 @@ struct Bullet : public Entity {
   }
 
   void Update(const float timestep) {
-    position = Vector2Add(position, Vector2Scale(Vector2Normalize(direction), speed * timestep));
+    position = Vector2Add(
+      position, Vector2Scale(Vector2Normalize(direction), speed * timestep)
+    );
   }
 
-	bool ShouldDelete(Player* player, const Rectangle limits) {
-		return !CheckCollisionPointRec(position, limits) || IsIntersecting(player->GetCollider());
-	}
+  bool CollidePlayer(Player* player) {
+    return IsIntersecting(player->GetCollider());
+  }
+
+  bool IsOutsideLimits(const Rectangle limits) {
+    return !CheckCollisionPointRec(position, limits);
+  }
 };
 
 struct Item : public Entity {
@@ -318,23 +322,21 @@ struct Item : public Entity {
 };
 
 struct PlayerWeapon : public Entity {
-  //if(IsIntersecting(MeleeEnemy menemy))
+  // if(IsIntersecting(MeleeEnemy menemy))
   PlayerWeapon(Vector2 _position, Vector2 _halfSizes, Color _color = GREEN) {
     this->position = _position;
     this->halfSizes = _halfSizes;
     this->color = _color;
   }
 
-  void Update(Player *player){
-    if (player->facingDirection == "left"){
-      position.x = player->position.x - 50; 
-    }
-    else {
+  void Update(Player* player) {
+    if (player->facingDirection == "left") {
+      position.x = player->position.x - 50;
+    } else {
       position.x = player->position.x + 50;
     }
     position.y = player->position.y;
   }
-
 };
 
 #endif
