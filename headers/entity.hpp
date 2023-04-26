@@ -21,8 +21,8 @@ const float BULLET_HALF_SIZE(5);
 const float BULLET_SPEED(300.0f);
 const Color BULLET_COLOR(MAGENTA);
 
-const Color STATIC_OBSTACLE_COLOR(GRAY);
-const Color MOVING_OBSTACLE_COLOR(DARKGRAY);
+const Color STATIC_OBSTACLE_COLOR(DARKPURPLE);
+const Color MOVING_OBSTACLE_COLOR(PURPLE);
 
 enum ObstacleType { STATIC, MOVING };
 enum Heading { LEFT, RIGHT };
