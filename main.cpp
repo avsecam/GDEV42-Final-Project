@@ -24,7 +24,7 @@ const float TIMESTEP(1.0f / (float)TARGET_FPS);
 
 const float START_TIME(30.0f); // in seconds
 const float ATTACK_ANIMATION_LENGTH(0.15f);
-const float SWING_COOLDOWN(0.5f);
+const float SWING_COOLDOWN(.75f);
 
 int main()
 {
@@ -119,6 +119,7 @@ int main()
       }
 
       canSwing = false;
+      swingCooldownTimeLeft = SWING_COOLDOWN;
 
       for (Bullet *b : level->bullets) {
         if (b->IsIntersecting(weapon->GetCollider())) {
@@ -242,7 +243,7 @@ int main()
         }
       }
 
-      if (swingCooldownTimeLeft <= 0.0f) {
+      if (swingCooldownTimeLeft <= 0.0f && !canSwing) {
         canSwing = true;
       }
       else {
