@@ -143,6 +143,7 @@ int main() {
       cameraView.target.x += driftX;
       // std::cout << "DRIFTING HORIZONTALLY" << std::endl;
     }
+
     if ((player->position.y + player->halfSizes.y) > windowBot) {
       cameraPushY = (player->position.y + player->halfSizes.y) - windowBot;
       // std::cout << "CAM PUSHING BOT" << std::endl;
@@ -156,6 +157,10 @@ int main() {
       // std::cout << "DRIFTING VERTICALLY" << std::endl;
     }
 
+		// Clamp camera
+		cameraView.target.x = Clamp(cameraView.target.x, 450, 750);
+		cameraView.target.y = Clamp(cameraView.target.y, 300, 750);
+
     if (IsKeyPressed(KEY_Q)) {
       showWeaponHitbox = !showWeaponHitbox;
     }
@@ -166,7 +171,7 @@ int main() {
       timeLeft -= accumulator;
       timeElapsed += accumulator;
 
-      level->Update({-1500, -1500, 3000, 3000}, TIMESTEP);
+      level->Update({0, 0, 1200, 1200}, TIMESTEP);
       for (size_t i = 0; i < level->bullets.size(); ++i) {
         Bullet *b = level->bullets[i];
         if (b->CollidePlayer(player)) {
@@ -174,7 +179,7 @@ int main() {
           level->bullets.erase(level->bullets.begin() + i);
           delete b;
         }
-        if (b->IsOutsideLimits({-1500, -1500, 3000, 3000})) {
+        if (b->IsOutsideLimits({0, 0, 1200, 1200})) {
           level->bullets.erase(level->bullets.begin() + i);
           delete b;
         }
