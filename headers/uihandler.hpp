@@ -15,7 +15,8 @@
 UIState currentGameState = InMainMenu;
 
 void startGame() { currentGameState = InGame; };
-void goToMainMenu() { currentGameState = InMainMenu; };
+// void goToMainMenu() { currentGameState = InMainMenu; };
+void goToMainMenu() { exit(1); };
 void goToScoreScreen() { currentGameState = InScoreScreen; };
 void goToPauseScreen() { currentGameState = InPauseScreen; };
 void goToGameOverScreen() { currentGameState = InGameOverScreen; };
@@ -322,7 +323,7 @@ struct GameOverScreen : Menu {
         saveScoreButton.active = false;
         uiLibrary.rootContainer.AddChild(&saveScoreButton);
 
-        returnToMainMenuButton.text = "MAIN MENU";
+        returnToMainMenuButton.text = "QUIT :(";
         returnToMainMenuButton.bounds = {
         windowWidth / 2 - BUTTON_WIDTH_1 / 2, windowHeight / 2 + BUTTON_HEIGHT_1,
         BUTTON_WIDTH_1, BUTTON_HEIGHT_1};
