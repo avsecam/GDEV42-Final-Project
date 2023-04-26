@@ -26,7 +26,20 @@ const float START_TIME(30.0f);  // in seconds
 const float ATTACK_ANIMATION_LENGTH(0.15f);
 const float SWING_COOLDOWN(.75f);
 
+<<<<<<< HEAD
 int main() {
+=======
+float findRotationAngle(
+  Vector2 characterPos, Vector2 mousePos
+) {
+  float resultAngle;
+  resultAngle = atan2f(mousePos.y - characterPos.y, mousePos.x - characterPos.x);
+  return resultAngle;
+}
+
+int main()
+{
+>>>>>>> 562b2c6acb9bd337a39d5b18c01b907a86601065
   Properties *properties = LoadProperties(PROPERTIES_FILENAME, TARGET_FPS);
   Level *level = Level::LoadLevel(LEVEL_FILENAME);
   level->GeneratePaths();
@@ -75,6 +88,8 @@ int main() {
 
   Texture swordIdleTexture = LoadTexture("./assets/swordIdle.png");
   Texture swordAttackTexture = LoadTexture("./assets/swordAttack.png");
+  Texture enemyMeleeTexture = LoadTexture("./assets/enemyMelee.png");
+  Texture enemyRangedTexture = LoadTexture("./assets/enemyRanged.png");
   Texture floor = LoadTexture("./assets/Floor.png");
 
   Texture itemHealthTexture = LoadTexture("./assets/Heart_Full.png");
@@ -278,8 +293,24 @@ int main() {
 
     level->Draw();
 
+<<<<<<< HEAD
     for (RangedEnemy *r : level->rangedEnemies) {
       r->Draw();
+=======
+    for (RangedEnemy *r : level->rangedEnemies)
+    {
+      Rectangle enemyRec;
+      Rectangle enemyWindowRec;
+      enemyRec.x = 108;
+      enemyRec.y = 128;
+      enemyRec.width = 280;
+      enemyRec.height = 267;
+      enemyWindowRec.x = r->position.x;
+      enemyWindowRec.y = r->position.y;
+      enemyWindowRec.width = 100.8/2;
+      enemyWindowRec.height = 96.48/2;
+      DrawTexturePro(enemyRangedTexture, enemyRec, enemyWindowRec, {50.4-25, 48.24-20}, findRotationAngle(level->player->position, r->position) * RAD2DEG, WHITE); 
+>>>>>>> 562b2c6acb9bd337a39d5b18c01b907a86601065
     }
     if (inAttackAnimation) {
       Rectangle swordRec;
@@ -320,12 +351,34 @@ int main() {
         WHITE
       );
     }
+<<<<<<< HEAD
     if (showWeaponHitbox) {
       weapon->Draw();
     }
 
     for (auto const &i : activeMeleeEnemies) {
       i->Draw();
+=======
+    
+    if(showWeaponHitbox){
+      weapon->Draw();
+    }
+
+    for (auto const &i : activeMeleeEnemies)
+    {
+      Rectangle enemyRec;
+      Rectangle enemyWindowRec; 
+             
+      enemyRec.x = 56;
+      enemyRec.y = 120;
+      enemyRec.width = 430;
+      enemyRec.height = 280;
+      enemyWindowRec.x = i->position.x;
+      enemyWindowRec.y = i->position.y;
+      enemyWindowRec.width = 72.25;
+      enemyWindowRec.height = 47.25;
+      DrawTexturePro(enemyMeleeTexture, enemyRec, enemyWindowRec, {30.375, 27.5}, findRotationAngle(level->player->position, i->position) * RAD2DEG, WHITE);
+>>>>>>> 562b2c6acb9bd337a39d5b18c01b907a86601065
     }
 
     if (!level->items.empty()) {
@@ -342,8 +395,13 @@ int main() {
   UnloadTexture(swordIdleTexture);
   UnloadTexture(floor);
   UnloadTexture(swordAttackTexture);
+<<<<<<< HEAD
 	UnloadTexture(itemHealthTexture);
 	UnloadTexture(itemTimeTexture);
+=======
+  UnloadTexture(enemyMeleeTexture);
+  UnloadTexture(enemyRangedTexture);
+>>>>>>> 562b2c6acb9bd337a39d5b18c01b907a86601065
   UnloadSound(swordSwing);
   UnloadSound(bloodSplatter);
   UnloadMusicStream(gameBgm);
@@ -360,3 +418,4 @@ int main() {
 
   return 0;
 }
+
