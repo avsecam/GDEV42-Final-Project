@@ -165,7 +165,6 @@ int main() {
         for (Bullet *b : level->bullets) {
           if (b->IsIntersecting(weapon->GetCollider())) {
             b->direction = {-b->direction.x, -b->direction.y};
-						b->hasDeflected = true;
           }
         }
       }
