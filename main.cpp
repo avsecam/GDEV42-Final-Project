@@ -44,11 +44,13 @@ int main() {
 
   float attackAnimTimeLeft = ATTACK_ANIMATION_LENGTH;
   float swingCooldownTimeLeft = 0.0f;
+  float swingCooldownBuff = 0.0f;
   Player *player = level->player;
   PlayerWeapon *weapon = new PlayerWeapon(player->position, {40, 60});
   bool inAttackAnimation = false;
   bool canSwing = false;
   bool showWeaponHitbox = false;
+
 
   menuHandler.inGameGUI.hpBar.InitBar(player->health);
 
@@ -160,7 +162,7 @@ int main() {
         }
 
         canSwing = false;
-        swingCooldownTimeLeft = SWING_COOLDOWN;
+        swingCooldownTimeLeft = SWING_COOLDOWN - swingCooldownBuff;
 
         for (Bullet *b : level->bullets) {
           if (b->IsIntersecting(weapon->GetCollider())) {
@@ -192,6 +194,8 @@ int main() {
         for (auto const &i : activeMeleeEnemies) {
           i->speedModifier += 0.025;
         }
+
+        swingCooldownBuff += 0.05f;
         std::cout << "Added 0.025 speed" << std::endl;
         player->killsThreshold = 0;
       }
@@ -315,6 +319,9 @@ int main() {
         activeMeleeEnemies = {menemy, menemy2, menemy3};
         inactiveMeleeEnemies = {menemy4, menemy5, menemy6, menemy7, menemy8, menemy9};
         level->rangedEnemies = {new RangedEnemy({900, 400}, {20, 20}), new RangedEnemy({300, 400}, {20, 20})};
+        level->bullets = {};
+        swingCooldownBuff = 0.0f;
+        level->player->position = {100,500};
       } else if (state == InPauseScreen) {
         if (IsKeyPressed(KEY_TAB)) {
           menuHandler.setState(InGame);
