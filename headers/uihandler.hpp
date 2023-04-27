@@ -83,7 +83,7 @@ void saveScore() {
 
     scoreUpdate = true;
 
-    currentGameState = InScoreScreen2;
+    currentGameState = InScoreScreen;
 };
 
 struct Menu {

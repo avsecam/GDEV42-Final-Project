@@ -309,6 +309,12 @@ int main() {
         //----------------------------------
         // TODO: Write Code that resets the game
         //----------------------------------
+        level->player->health = 10;
+        level->player->kills = 0;
+        level->player->killsThreshold = 0;
+        activeMeleeEnemies = {menemy, menemy2, menemy3};
+        inactiveMeleeEnemies = {menemy4, menemy5, menemy6, menemy7, menemy8, menemy9};
+        level->rangedEnemies = {new RangedEnemy({900, 400}, {20, 20}), new RangedEnemy({300, 400}, {20, 20})};
       } else if (state == InPauseScreen) {
         if (IsKeyPressed(KEY_TAB)) {
           menuHandler.setState(InGame);
