@@ -83,7 +83,7 @@ void saveScore() {
 
     scoreUpdate = true;
 
-    currentGameState = InScoreScreen;
+    currentGameState = InScoreScreen2;
 };
 
 struct Menu {
@@ -211,6 +211,88 @@ struct ScoreScreen : public Menu {
         windowWidth / 2 - BUTTON_WIDTH_1 / 2, windowHeight - BUTTON_HEIGHT_1 * 2,
         BUTTON_WIDTH_1, BUTTON_HEIGHT_1};
         returnToMainMenuButton.buttonAction = goToMainMenu;
+        returnToMainMenuButton.active = true;
+        uiLibrary.rootContainer.AddChild(&returnToMainMenuButton);
+    }
+
+    void loadBackgroundTexture(Texture tex) override {}
+
+    void unloadBackgroundTexture() override {}
+
+    void Update() override { uiLibrary.Update(); }
+};
+
+struct ScoreScreen2 : public Menu {
+    Label highScoreLabel;
+    Label* scoreLabel;
+    Label* nameLabel;
+    Button returnToMainMenuButton;
+    std::fstream highScoreFile;
+    int currentScore;
+
+    void createUI(float windowWidth, float windowHeight) override {
+        uiLibrary.rootContainer.ClearChildren();
+
+        uiLibrary.rootContainer.bounds = {0, 0, windowWidth, windowHeight};
+        uiLibrary.rootContainer.transparent = false;
+        uiLibrary.rootContainer.containerColor = WHITE;
+
+        highScoreLabel.text = "HIGH SCORES";
+        highScoreLabel.bounds = {windowWidth / 2, FONT_SIZE_3 * 2, 0, FONT_SIZE_3};
+        highScoreLabel.fontSize = FONT_SIZE_3;
+        highScoreLabel.setCenterAlign();
+        highScoreLabel.textColor = BLACK;
+
+        uiLibrary.rootContainer.AddChild(&highScoreLabel);
+
+        highScoreFile.open("high_scores.txt");
+        std::string line;
+        float scoreNumber = 1;
+        while (getline(highScoreFile, line)) {
+        std::cout << line << std::endl;
+        int end = line.find(" ");
+        std::string score = line.substr(0, end - 0);
+        std::string name = line.substr(end, line.length());
+
+        currentScore = stoi(score);
+
+        if (scoreNumber == 1) {
+            max_score = currentScore;
+        }
+
+        scoreLabel = new Label;
+        scoreLabel->text = score;
+        scoreLabel->bounds = {
+            windowWidth / 2 - 20, (FONT_SIZE_3 * 3) + (FONT_SIZE_2 * scoreNumber),
+            0, FONT_SIZE_2};
+        scoreLabel->fontSize = FONT_SIZE_2;
+        scoreLabel->setRightAlign();
+        scoreLabel->textColor = BLACK;
+
+        nameLabel = new Label;
+        nameLabel->text = name;
+        nameLabel->bounds = {
+            windowWidth / 2 + 10, (FONT_SIZE_3 * 3) + (FONT_SIZE_2 * scoreNumber),
+            0, FONT_SIZE_2};
+        nameLabel->fontSize = FONT_SIZE_2;
+        nameLabel->setLeftAlign();
+        nameLabel->textColor = BLACK;
+
+        uiLibrary.rootContainer.AddChild(scoreLabel);
+        uiLibrary.rootContainer.AddChild(nameLabel);
+
+        num_of_scores += 1;
+        scoreNumber += 1;
+        }
+
+        min_score = currentScore;
+        highScoreFile.close();
+
+        returnToMainMenuButton.text = "QUIT GAME";
+        returnToMainMenuButton.bounds = {
+        windowWidth / 2 - BUTTON_WIDTH_1 / 2, windowHeight - BUTTON_HEIGHT_1 * 2,
+        BUTTON_WIDTH_1, BUTTON_HEIGHT_1};
+        returnToMainMenuButton.buttonAction = exitGame;
         returnToMainMenuButton.active = true;
         uiLibrary.rootContainer.AddChild(&returnToMainMenuButton);
     }
@@ -417,6 +499,7 @@ struct MenuHandler {
     PauseScreen pauseScreen;
     GameOverScreen gameOverScreen;
     HPAndScoreGUI inGameGUI;
+    ScoreScreen2 scoreScreen2;
     float menuWindowWidth, menuWindowHeight;
 
     void initialize(float windowWidth, float windowHeight) {
@@ -428,6 +511,7 @@ struct MenuHandler {
         pauseScreen.createUI(windowWidth, windowHeight);
         gameOverScreen.createUI(windowWidth, windowHeight);
         inGameGUI.createUI(windowWidth, windowHeight);
+        scoreScreen2.createUI(windowWidth, windowHeight);
 
         currentGameState = InMainMenu;
 
@@ -436,6 +520,7 @@ struct MenuHandler {
         menuList.push_back(&pauseScreen);
         menuList.push_back(&gameOverScreen);
         menuList.push_back(&inGameGUI);
+        menuList.push_back(&scoreScreen2);
     }
 
     void Update() {

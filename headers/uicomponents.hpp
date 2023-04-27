@@ -25,7 +25,8 @@ enum UIState {
 	InScoreScreen = 1,
 	InPauseScreen = 2,
 	InGameOverScreen = 3,
-	InGame = 4
+	InGame = 4,
+    InScoreScreen2 = 5,
 };
 
 // --------------------------------------------------
