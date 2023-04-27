@@ -15,11 +15,11 @@
 UIState currentGameState = InMainMenu;
 
 void startGame() { currentGameState = InGame; };
-// void goToMainMenu() { currentGameState = InMainMenu; };
-void goToMainMenu() { exit(1); };
+void goToMainMenu() { currentGameState = InMainMenu; };
 void goToScoreScreen() { currentGameState = InScoreScreen; };
 void goToPauseScreen() { currentGameState = InPauseScreen; };
 void goToGameOverScreen() { currentGameState = InGameOverScreen; };
+void exitGame() { exit(1); };
 
 int num_of_scores = 0;
 int max_score = 0;
@@ -130,11 +130,11 @@ struct MainMenu : public Menu {
     }
 
     void loadBackgroundTexture(Texture tex) override {
-        //startMenuBackground.backgroundImageTexture = tex;
+        startMenuBackground.backgroundImageTexture = tex;
     }
 
     void unloadBackgroundTexture() override {
-        //UnloadTexture(startMenuBackground.backgroundImageTexture);
+        UnloadTexture(startMenuBackground.backgroundImageTexture);
     }
 
     void Update() override { uiLibrary.Update(); }
@@ -152,7 +152,8 @@ struct ScoreScreen : public Menu {
         uiLibrary.rootContainer.ClearChildren();
 
         uiLibrary.rootContainer.bounds = {0, 0, windowWidth, windowHeight};
-        uiLibrary.rootContainer.transparent = true;
+        uiLibrary.rootContainer.transparent = false;
+        uiLibrary.rootContainer.containerColor = WHITE;
 
         highScoreLabel.text = "HIGH SCORES";
         highScoreLabel.bounds = {windowWidth / 2, FONT_SIZE_3 * 2, 0, FONT_SIZE_3};
@@ -327,7 +328,7 @@ struct GameOverScreen : Menu {
         returnToMainMenuButton.bounds = {
         windowWidth / 2 - BUTTON_WIDTH_1 / 2, windowHeight / 2 + BUTTON_HEIGHT_1,
         BUTTON_WIDTH_1, BUTTON_HEIGHT_1};
-        returnToMainMenuButton.buttonAction = goToMainMenu;
+        returnToMainMenuButton.buttonAction = exitGame;
         returnToMainMenuButton.active = true;
         uiLibrary.rootContainer.AddChild(&returnToMainMenuButton);
     }

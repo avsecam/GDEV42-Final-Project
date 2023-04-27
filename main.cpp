@@ -101,6 +101,7 @@ int main() {
   Texture enemyRangedTexture = LoadTexture("./assets/enemyRanged.png");
   Texture knightTexture = LoadTexture("./assets/knight.png");
   Texture floor = LoadTexture("./assets/Floor.png");
+  Texture mainMenuBackground = LoadTexture("./assets/Hakenslash.png");
 
   Texture itemHealthTexture = LoadTexture("./assets/Heart_Full.png");
 
@@ -433,6 +434,9 @@ int main() {
     }
 
     EndMode2D();
+    menuHandler.menuList[InMainMenu]->loadBackgroundTexture(
+      mainMenuBackground
+    );
     menuHandler.menuList[InGameOverScreen]->loadBackgroundTexture(
       gameOverBackground
     );
@@ -445,6 +449,7 @@ int main() {
   UnloadTexture(heartHalf);
   UnloadTexture(heartEmpty);
   menuHandler.menuList[InGameOverScreen]->unloadBackgroundTexture();
+  menuHandler.menuList[InMainMenu]->unloadBackgroundTexture();
   UnloadTexture(swordIdleTexture);
   UnloadTexture(floor);
   UnloadTexture(swordAttackTexture);
